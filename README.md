@@ -1,2 +1,2 @@
 # libgdx-template
-A template project ready to use libgdx
+A template project ready to use libgdx with maven
