@@ -1,4 +1,4 @@
-package mc.drawing;
+package mc.challenge.maze;
 /*******************************************************************************
  * Copyright 2011 See AUTHORS file.
  *
@@ -20,19 +20,19 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import mc.ChallengeImpl;
+import mc.challenge.maze.HeadlessMain;
 import mc.challenge.maze.Maze;
 import mc.challenge.maze.MazeFactory;
 import mc.HeadlessLauncher;
+import mc.drawing.MapDrawer;
 
-public class Main extends ApplicationAdapter {
+public class GraphicalMain extends ApplicationAdapter {
     private Camera cam;
     private SpriteBatch batch;
     private MapDrawer mapDrawer;
-    private HeadlessLauncher mazeRunner;
+    private HeadlessMain mazeRunner;
 
     @Override
     public void create() {
@@ -47,7 +47,7 @@ public class Main extends ApplicationAdapter {
         Maze maze = MazeFactory.getEmptyMap(20, 20);
         mapDrawer = new MapDrawer(maze);
 
-        mazeRunner = new HeadlessLauncher(
+        mazeRunner = new HeadlessMain(
                 new ChallengeImpl(),
                 maze
         );

@@ -34,7 +34,8 @@ public class Maze {
     }
 
 
-    public boolean doMove(Direction direction) {
+    boolean doMove(MoveSupplier moveSupplier) {
+        var direction = moveSupplier.supply();
         if (endReached) {
             return false;
         }

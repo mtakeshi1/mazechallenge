@@ -24,6 +24,10 @@ public class ChallengeImpl implements Challenge {
      * - HeadlessLauncher for non-visual
      */
     public Direction getMove() {
+//        Maze.CellType[][] cellTypes = maze.visitedMatrix();
+//        Position playerPosition = maze.getPlayerPosition();
+//        int stepsTaken = maze.getStepsTaken();
+
         return updownlst.get(counter++ % updownlst.size());
     }
 

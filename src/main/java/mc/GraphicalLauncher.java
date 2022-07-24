@@ -2,7 +2,7 @@ package mc;
 
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
-import mc.drawing.Main;
+import mc.challenge.maze.GraphicalMain;
 
 public class GraphicalLauncher {
     public static void main(String[] arg) {
@@ -11,6 +11,6 @@ public class GraphicalLauncher {
         config.setForegroundFPS(20);
         config.setWindowedMode(1200, 1200);
 
-        new Lwjgl3Application(new Main(), config);
+        new Lwjgl3Application(new GraphicalMain(), config);
     }
 }
