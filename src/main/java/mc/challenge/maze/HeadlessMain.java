@@ -30,7 +30,7 @@ public class HeadlessMain {
         while (!maze.isEndReached()) {
             maze.doMove(challenge.getMove());
 
-            if (maze.getStepsTaken() > 1000000) {
+            if (maze.getStepsTaken() > 10000000) {
                 throw new RuntimeException("Sorry, too many steps");
             }
         }
