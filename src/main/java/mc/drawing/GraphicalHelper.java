@@ -4,13 +4,14 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import mc.challenge.Challenge;
 import mc.challenge.maze.Maze;
 import mc.challenge.maze.Maze.CellType;
 import mc.challenge.maze.Position;
 
 import java.util.function.Consumer;
 
-public class DrawHelper {
+public class GraphicalHelper {
 
     private Maze maze;
 
@@ -19,18 +20,19 @@ public class DrawHelper {
         maze.drawPlayer(drawplayer);
     }
 
-    public DrawHelper(
+    public GraphicalHelper(
             SpriteBatch batch,
             int cell_size,
             int offsetx,
             int offsety,
-            Maze maze
+            Maze maze,
+            Challenge challenge
     ) {
         this.batch = batch;
         this.cell_size = cell_size;
         this.offsetx = offsetx;
         this.offsety = offsety;
-
+        this.challenge = challenge;
 
         this.maze = maze;
         wp = new Sprite(new Texture("./data/wp.png"));
@@ -46,6 +48,8 @@ public class DrawHelper {
     private int offsety;
     private Sprite wp;
     private Sprite player;
+
+    private Challenge challenge;
 
     Consumer<CellType[][]> drawmaze = (matrix) -> {
 
@@ -75,10 +79,35 @@ public class DrawHelper {
                     case UNKNOWN -> wp.setColor(Color.BLACK);
                 }
                 wp.draw(batch);
+                wp.setColor(Color.BLACK);
+                wp.setAlpha(.5f);
+                wp.draw(batch);
+                wp.setAlpha(1f);
             }
         }
 
 
+    };
+
+
+    Consumer<CellType[][]> drawFOV = (matrix) -> {
+        for (int r = 0; r < matrix.length; r++) {
+            for (int c = 0; c < matrix[0].length; c++) {
+                wp.setPosition(offsetx + c * cell_size, offsety + r * cell_size);
+                switch (matrix[r][c]) {
+                    case WALL -> wp.setColor(Color.BROWN);
+                    case FLOOR -> wp.setColor(Color.SALMON);
+                    case START -> wp.setColor(Color.RED);
+                    case FINISH -> wp.setColor(Color.GREEN);
+                    case UNKNOWN -> wp.setColor(Color.BLACK);
+                }
+                wp.draw(batch);
+                wp.setColor(Color.BLACK);
+                wp.setAlpha(.5f);
+                wp.draw(batch);
+                wp.setAlpha(1f);
+            }
+        }
     };
 
     Consumer<Position> drawplayer = (p) -> {
@@ -95,5 +124,9 @@ public class DrawHelper {
 
     public float getPlayery() {
         return player.getY();
+    }
+
+    public void doMove() {
+        maze.doMove(challenge.getMove());
     }
 }

@@ -1,4 +1,4 @@
-package mc.challenge.maze;
+package mc.drawing;
 /*******************************************************************************
  * Copyright 2011 See AUTHORS file.
  *
@@ -22,12 +22,14 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import mc.ChallengeImpl;
-import mc.drawing.DrawHelper;
+import mc.challenge.maze.HeadlessMain;
+import mc.challenge.maze.Maze;
+import mc.challenge.maze.MazeFactory;
 
 public class GraphicalMain extends ApplicationAdapter {
     private Camera cam;
     private SpriteBatch batch;
-    private DrawHelper drawHelper;
+    private GraphicalHelper graphicalHelper;
     private HeadlessMain mazeRunner;
 
     @Override
@@ -36,23 +38,23 @@ public class GraphicalMain extends ApplicationAdapter {
         batch = new SpriteBatch();
 
         cam = new OrthographicCamera(800, 800);
-        cam.position.set(10f, 10f, 10f);
-        cam.update();
 
 
-        Maze maze = MazeFactory.getEmptyMap(200, 200);
-        drawHelper = new DrawHelper(
+//        Maze maze = MazeFactory.getEmptyMap(200, 200);
+        Maze maze = MazeFactory.getScatterMap(200, 200);
+        graphicalHelper = new GraphicalHelper(
                 batch,
                 8,
                 100,
                 100,
-                maze
+                maze,
+                new ChallengeImpl()
         );
 
-        mazeRunner = new HeadlessMain(
-                new ChallengeImpl(),
-                maze
-        );
+//        mazeRunner = new HeadlessMain(
+//                new ChallengeImpl(),
+//                maze
+//        );
 
     }
 
@@ -63,18 +65,19 @@ public class GraphicalMain extends ApplicationAdapter {
 
         batch.setProjectionMatrix(cam.combined);
 
-        if (Math.abs(cam.position.x - drawHelper.getPlayerx()) > 300) {
-            cam.position.x = drawHelper.getPlayerx();
+        if (Math.abs(cam.position.x - graphicalHelper.getPlayerx()) > 300) {
+            cam.position.x = graphicalHelper.getPlayerx();
         }
-        if (Math.abs(cam.position.y - drawHelper.getPlayery()) > 300) {
-            cam.position.y = drawHelper.getPlayery();
+        if (Math.abs(cam.position.y - graphicalHelper.getPlayery()) > 300) {
+            cam.position.y = graphicalHelper.getPlayery();
         }
 
         cam.update();
 
-        mazeRunner.doMove();
+        graphicalHelper.doMove();
+
         batch.begin();
-        drawHelper.draw();
+        graphicalHelper.draw();
         batch.end();
     }
 

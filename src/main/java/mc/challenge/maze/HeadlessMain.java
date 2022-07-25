@@ -22,13 +22,13 @@ public class HeadlessMain {
     /**
      * return true is moved, false if it was a wall
      */
-    boolean doMove() {
-        return maze.doMove(challenge::getMove);
+    Maze.CellType[][] doMove() {
+        return maze.doMove(challenge.getMove());
     }
 
     public void doAllMoves() {
         while (!maze.isEndReached()) {
-            maze.doMove(challenge::getMove);
+            maze.doMove(challenge.getMove());
 
             if (maze.getStepsTaken() > 1000000) {
                 throw new RuntimeException("Sorry, too many steps");

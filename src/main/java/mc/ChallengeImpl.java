@@ -4,10 +4,13 @@ import mc.challenge.Challenge;
 import mc.challenge.maze.Direction;
 import mc.challenge.maze.Maze;
 
+import java.util.Random;
+
 import static mc.challenge.Helper.updownlst;
 
 public class ChallengeImpl implements Challenge {
 
+    private static final Random rnd = new Random();
     private Maze maze;
 
     @Override
@@ -24,11 +27,23 @@ public class ChallengeImpl implements Challenge {
      * - HeadlessLauncher for non-visual
      */
     public Direction getMove() {
+        return switch (rnd.nextInt(4)) {
+
+            case 0 -> Direction.EAST;
+
+            case 1 ->  Direction.WEST;
+
+            case 2 -> Direction.NORTH;
+
+            case 3 -> Direction.SOUTH;
+
+            default -> throw new IllegalStateException("Unexpected value: " + rnd.nextInt(4));
+        };
 //        Maze.CellType[][] cellTypes = maze.visitedMatrix();
 //        Position playerPosition = maze.getPlayerPosition();
 //        int stepsTaken = maze.getStepsTaken();
 
-        return updownlst.get(counter++ % updownlst.size());
+//        return updownlst.get(counter++ % updownlst.size());
     }
 
 }

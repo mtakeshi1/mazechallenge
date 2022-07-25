@@ -23,12 +23,39 @@ public class Helper {
             updownlst.add(Direction.EAST);
             updownlst.add(Direction.EAST);
             updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
             for (int x = 0; x < 100; x++) {
                 updownlst.add(Direction.SOUTH);
             }
             updownlst.add(Direction.EAST);
             updownlst.add(Direction.EAST);
             updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
         }
     }
+
+
+
 }

@@ -1,7 +1,19 @@
 package mc.challenge.maze;
 
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
+import org.lwjgl.system.CallbackI;
+
+import javax.sound.sampled.Line;
+import java.awt.*;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import static mc.challenge.maze.Maze.CellType.FLOOR;
+import static mc.challenge.maze.Maze.CellType.UNKNOWN;
+import static mc.challenge.maze.Maze.CellType.WALL;
 
 public class Maze {
 
@@ -35,33 +47,78 @@ public class Maze {
     }
 
 
-    boolean doMove(MoveSupplier moveSupplier) {
-        var direction = moveSupplier.supply();
+    public CellType[][] doMove(Direction direction) {
         if (endReached) {
-            return false;
+            return new CellType[0][0];
         }
         Position newPosition = player.getPosition().plus(direction.getTP()[0], direction.getTP()[1]);
         var type = matrix[newPosition.row()][newPosition.col()];
 
-        if (type == CellType.WALL) {
-            return false;
+        if (type == WALL) {
+            return getLos();
         }
 
         if (newPosition.equals(finish)) {
             System.out.println("FINISH !");
             endReached = true;
         }
-
         stepsTaken++;
         player.setPosition(newPosition);
-        for (int r = newPosition.row() - 1; r <= newPosition.row() + 1; r++) {
-            for (int c = newPosition.col() - 1; c <= newPosition.col() + 1; c++) {
-                explore(new Position(r, c));
-            }
-        }
-        return true;
+        return getLos();
+
+//        for (int r = newPosition.row() - 1; r <= newPosition.row() + 1; r++) {
+//            for (int c = newPosition.col() - 1; c <= newPosition.col() + 1; c++) {
+//                explore(new Position(r, c));
+//            }
+//        }
+//        return null;
     }
 
+    CellType[][] getLos() {
+
+        var view = new CellType[13][13];
+
+        for (var arr : view) {
+            Arrays.fill(arr, CellType.UNKNOWN);
+        }
+
+        var start = player.getPosition();
+
+        Vector2 v2 = new Vector2(0.5f, 0);
+        for (int j = 0; j < 360; j++) {
+            boolean blocked = false;
+            for (int i = 0; i < 25; i++) {
+                v2.setLength(v2.len() + 0.25f);
+                int r = (int) v2.y;
+                int c = (int) v2.x;
+                int mr = r + start.row();
+                int mc = c + start.col();
+                if (mr < 0 || mr >= matrix.length || mc < 0 || mc >= matrix[0].length) {
+                    continue;
+                }
+                r += 6;
+                c += 6;
+
+                CellType tile = matrix[mr][mc];
+                if (!blocked) {
+                    view[r][c] = tile;
+                    if (tile == WALL) {
+                        blocked = true;
+                    } else {
+                        view[r][c] = FLOOR;
+
+                    }
+                    explore(new Position(mr, mc));
+                } else if (view[r][c] == UNKNOWN) {
+                    view[r][c] = WALL;
+                }
+            }
+            v2.rotateDeg(1);
+            v2.setLength(0.5f);
+        }
+
+        return view;
+    }
 
     public Maze(int rows, int cols, Position start, Position finish) {
         if (rows < 5) throw new IllegalArgumentException("rows must be >= 5");
@@ -93,31 +150,22 @@ public class Maze {
         player = new Player(start);
     }
 
-//    public void explore() {
-//        for (int r = 0; r < matrix.length; r++) {
-//            for (int c = 0; c < matrix[0].length; c++) {
-//                explore(new Position(r, c));
-//            }
-//        }
-//    }
-
-
     private void fillMatrixWithFloor() {
         for (int r = 0; r < matrix.length; r++) {
             for (int c = 0; c < matrix[0].length; c++) {
-                matrix[r][c] = CellType.FLOOR;
+                matrix[r][c] = FLOOR;
             }
         }
     }
 
     private void wallEdges() {
         for (int r = 0; r < matrix.length; r++) {
-            matrix[r][0] = CellType.WALL;
-            matrix[r][matrix[0].length - 1] = CellType.WALL;
+            matrix[r][0] = WALL;
+            matrix[r][matrix[0].length - 1] = WALL;
         }
         for (int c = 0; c < matrix[0].length; c++) {
-            matrix[0][c] = CellType.WALL;
-            matrix[matrix.length - 1][c] = CellType.WALL;
+            matrix[0][c] = WALL;
+            matrix[matrix.length - 1][c] = WALL;
         }
     }
 
@@ -200,6 +248,22 @@ public class Maze {
 
     public void drawPlayer(Consumer<Position> drawPlayer) {
         drawPlayer.accept(getPlayerPosition());
+    }
+
+    boolean setTile(int r, int c, CellType type) {
+        return setTile(new Position(r, c), type);
+    }
+
+    boolean setTile(Position position, CellType type) {
+        if (matrix[position.row()][position.col()] == FLOOR) {
+            matrix[position.row()][position.col()] = type;
+            return true;
+        }
+        return false;
+    }
+
+    CellType getTile(int r, int c) {
+        return matrix[r][c];
     }
 
 }
