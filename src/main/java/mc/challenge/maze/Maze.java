@@ -1,6 +1,7 @@
 package mc.challenge.maze;
 
 import java.util.Random;
+import java.util.function.Consumer;
 
 public class Maze {
 
@@ -192,5 +193,13 @@ public class Maze {
         return endReached;
     }
 
+
+    public void drawMaze(Consumer<CellType[][]> drawMaze) {
+        drawMaze.accept(visitedMatrix());
+    }
+
+    public void drawPlayer(Consumer<Position> drawPlayer) {
+        drawPlayer.accept(getPlayerPosition());
+    }
 
 }

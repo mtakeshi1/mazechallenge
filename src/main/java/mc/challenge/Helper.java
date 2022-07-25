@@ -11,19 +11,23 @@ public class Helper {
 
 
     static {
-        for (int x = 0; x < 10; x++) {
+        for (int x = 0; x < 100; x++) {
             updownlst.add(Direction.SOUTH);
             updownlst.add(Direction.WEST);
         }
 
-        for (int y = 0; y < 20; y++) {
-            for (int x = 0; x < 20; x++) {
+        for (int y = 0; y < 100; y++) {
+            for (int x = 0; x < 100; x++) {
                 updownlst.add(Direction.NORTH);
             }
             updownlst.add(Direction.EAST);
-            for (int x = 0; x < 20; x++) {
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
+            for (int x = 0; x < 100; x++) {
                 updownlst.add(Direction.SOUTH);
             }
+            updownlst.add(Direction.EAST);
+            updownlst.add(Direction.EAST);
             updownlst.add(Direction.EAST);
         }
     }

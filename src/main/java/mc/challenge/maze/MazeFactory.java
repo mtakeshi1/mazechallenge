@@ -12,7 +12,6 @@ public class MazeFactory {
     public static Maze getEmptyMap(int rows, int cols) {
         var map = new Maze(rows, cols);
 
-
         return map;
     }
 }

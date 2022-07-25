@@ -22,16 +22,12 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import mc.ChallengeImpl;
-import mc.challenge.maze.HeadlessMain;
-import mc.challenge.maze.Maze;
-import mc.challenge.maze.MazeFactory;
-import mc.HeadlessLauncher;
-import mc.drawing.MapDrawer;
+import mc.drawing.DrawHelper;
 
 public class GraphicalMain extends ApplicationAdapter {
     private Camera cam;
     private SpriteBatch batch;
-    private MapDrawer mapDrawer;
+    private DrawHelper drawHelper;
     private HeadlessMain mazeRunner;
 
     @Override
@@ -44,8 +40,14 @@ public class GraphicalMain extends ApplicationAdapter {
         cam.update();
 
 
-        Maze maze = MazeFactory.getEmptyMap(20, 20);
-        mapDrawer = new MapDrawer(maze);
+        Maze maze = MazeFactory.getEmptyMap(200, 200);
+        drawHelper = new DrawHelper(
+                batch,
+                8,
+                100,
+                100,
+                maze
+        );
 
         mazeRunner = new HeadlessMain(
                 new ChallengeImpl(),
@@ -61,18 +63,18 @@ public class GraphicalMain extends ApplicationAdapter {
 
         batch.setProjectionMatrix(cam.combined);
 
-        if (Math.abs(cam.position.x - mapDrawer.getPlayerDrawPosition().x) > 300) {
-            cam.position.x = mapDrawer.getPlayerDrawPosition().x;
+        if (Math.abs(cam.position.x - drawHelper.getPlayerx()) > 300) {
+            cam.position.x = drawHelper.getPlayerx();
         }
-        if (Math.abs(cam.position.y - mapDrawer.getPlayerDrawPosition().y) > 300) {
-            cam.position.y = mapDrawer.getPlayerDrawPosition().y + 300;
+        if (Math.abs(cam.position.y - drawHelper.getPlayery()) > 300) {
+            cam.position.y = drawHelper.getPlayery();
         }
 
         cam.update();
 
         mazeRunner.doMove();
         batch.begin();
-        mapDrawer.draw(batch);
+        drawHelper.draw();
         batch.end();
     }
 
