@@ -1,7 +1,6 @@
 package mc.challenge.maze;
 
 import mc.Configuration;
-import squidpony.squidgrid.mapping.ClassicRogueMapGenerator;
 import squidpony.squidgrid.mapping.ConnectingMapGenerator;
 import squidpony.squidgrid.mapping.DungeonGenerator;
 import squidpony.squidgrid.mapping.DungeonUtility;
@@ -11,7 +10,7 @@ import squidpony.squidmath.RNG;
 
 import java.util.Random;
 
-import static mc.challenge.maze.Maze.CellType.WALL;
+import static mc.challenge.maze.Maze.CellType.WLL;
 
 public class MazeFactory {
 
@@ -31,11 +30,11 @@ public class MazeFactory {
                 System.out.println();
                 for (int c = 0; c < cols; c++) {
                     switch (map.getTile(r, c)) {
-                        case WALL -> System.out.print('#');
-                        case FLOOR -> System.out.print('.');
-                        case START -> System.out.print('<');
-                        case FINISH -> System.out.print('>');
-                        case UNKNOWN -> System.out.print('?');
+                        case WLL -> System.out.print('#');
+                        case FLR -> System.out.print('.');
+                        case SRT -> System.out.print('<');
+                        case FSH -> System.out.print('>');
+                        case UNK -> System.out.print('?');
                     }
                 }
             }
@@ -54,18 +53,18 @@ public class MazeFactory {
 
         while (total-- > 0) {
             Position p = new Position(rnd.nextInt(rows - 2) + 1, rnd.nextInt(cols - 2) + 1);
-            map.setTile(p, WALL);
+            map.setTile(p, WLL);
         }
 
         for (int r = 2; r < rows - 2; r++) {
             for (int c = 1; c < cols - 1; c++) {
-                if (map.getTile(r, c) == WALL) {
-                    if (map.getTile(r + 1, c + 1) == WALL) {
-                        map.setTile(r, c + 1, WALL);
+                if (map.getTile(r, c) == WLL) {
+                    if (map.getTile(r + 1, c + 1) == WLL) {
+                        map.setTile(r, c + 1, WLL);
                     }
 
-                    if (map.getTile(r - 1, c + 1) == WALL) {
-                        map.setTile(r, c + 1, WALL);
+                    if (map.getTile(r - 1, c + 1) == WLL) {
+                        map.setTile(r, c + 1, WLL);
                     }
 
                 }

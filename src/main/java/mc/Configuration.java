@@ -34,7 +34,6 @@ public class Configuration {
     public static Supplier<? extends Challenge> challenge = ChallengeImpl::new;
 
     public static List<Supplier<Maze>> mazes = List.of(
-            () -> MazeFactory.getFlowingCave(SMALL, SMALL),
             () -> MazeFactory.getFlowingCave(MEDIUM, MEDIUM),
             () -> MazeFactory.getEmptyMap(SMALL, SMALL),
             () -> MazeFactory.getEmptyMap(MEDIUM, MEDIUM),

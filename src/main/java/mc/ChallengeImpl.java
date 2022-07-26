@@ -2,24 +2,23 @@ package mc;
 
 import mc.challenge.Challenge;
 import mc.challenge.maze.Direction;
-import mc.challenge.maze.Maze;
+import mc.challenge.maze.IMaze;
 
+import java.util.Arrays;
 import java.util.Random;
-
-import static mc.challenge.Helper.updownlst;
 
 public class ChallengeImpl implements Challenge {
 
     private static final Random rnd = new Random();
-    private Maze maze;
+    private IMaze maze;
 
     @Override
-    public void setMap(Maze maze) {
+    public void setMap(IMaze maze) {
         this.maze = maze;
     }
 
 
-    int counter = 0;
+    int counter = 1;
 
     /**
      * This method will be called each iteration by the program.
@@ -27,11 +26,40 @@ public class ChallengeImpl implements Challenge {
      * - HeadlessLauncher for non-visual
      */
     public Direction getMove() {
+
+
+        var vis = maze.getLos();
+        maze.getLos();
+
+
+        for (var m : vis) {
+            System.out.println(Arrays.toString(m));
+        }
+        System.out.println();
+
+
+//        for (int x = 1; x < 200; x++) {
+//            for (int y = 1; y < x; y++) {
+//                maze.doMove(Direction.EAST);
+//            }
+//
+//            for (int y = 1; y < x; y++) {
+//                maze.doMove(Direction.SOUTH);
+//            }
+//            for (int y = 1; y < x; y++) {
+//                maze.doMove(Direction.WEST);
+//            }
+//
+//            for (int y = 1; y < x; y++) {
+//                maze.doMove(Direction.NORTH);
+//            }
+//        }
+
         return switch (rnd.nextInt(4)) {
 
             case 0 -> Direction.EAST;
 
-            case 1 ->  Direction.WEST;
+            case 1 -> Direction.WEST;
 
             case 2 -> Direction.NORTH;
 

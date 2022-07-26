@@ -30,8 +30,8 @@ public class GraphicalHelper {
         this.offsetx = Configuration.OFFSET_X;
         this.offsety = Configuration.OFFSET_Y;
         this.challenge = Configuration.challenge.get();
-
         this.maze = maze;
+        challenge.setMap(maze);
         wp = new Sprite(new Texture("./data/wp.png"));
         player = new Sprite(new Texture("./data/player.png"));
         player.setSize(cell_size, cell_size);
@@ -69,11 +69,11 @@ public class GraphicalHelper {
             for (int c = 0; c < matrix[0].length; c++) {
                 wp.setPosition(offsetx + c * cell_size, offsety + r * cell_size);
                 switch (matrix[r][c]) {
-                    case WALL -> wp.setColor(Color.BROWN);
-                    case FLOOR -> wp.setColor(Color.SALMON);
-                    case START -> wp.setColor(Color.RED);
-                    case FINISH -> wp.setColor(Color.GREEN);
-                    case UNKNOWN -> wp.setColor(Color.BLACK);
+                    case WLL -> wp.setColor(Color.BROWN);
+                    case FLR -> wp.setColor(Color.SALMON);
+                    case SRT -> wp.setColor(Color.RED);
+                    case FSH -> wp.setColor(Color.GREEN);
+                    case UNK -> wp.setColor(Color.BLACK);
                 }
                 wp.draw(batch);
                 wp.setColor(Color.BLACK);
@@ -92,11 +92,11 @@ public class GraphicalHelper {
             for (int c = 0; c < matrix[0].length; c++) {
                 wp.setPosition(offsetx + c * cell_size, offsety + r * cell_size);
                 switch (matrix[r][c]) {
-                    case WALL -> wp.setColor(Color.BROWN);
-                    case FLOOR -> wp.setColor(Color.SALMON);
-                    case START -> wp.setColor(Color.RED);
-                    case FINISH -> wp.setColor(Color.GREEN);
-                    case UNKNOWN -> wp.setColor(Color.BLACK);
+                    case WLL -> wp.setColor(Color.BROWN);
+                    case FLR -> wp.setColor(Color.SALMON);
+                    case SRT -> wp.setColor(Color.RED);
+                    case FSH -> wp.setColor(Color.GREEN);
+                    case UNK -> wp.setColor(Color.BLACK);
                 }
                 wp.draw(batch);
                 wp.setColor(Color.BLACK);
