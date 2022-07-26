@@ -4,6 +4,10 @@
 ### What is expected ?
 Write code and send it to me or leave a pullrequest
 
+Basicly you start by:
+- implementing: ChallengeImpl.java (current code will only run to see something moving on the screen)
+- running: GraphicalLauncher.java
+
 ### What will happen with it ?
 I will compare the code with others both by
 - cpu benchmark
@@ -41,7 +45,7 @@ If you are really not able you could send me your renamed package with the **fil
 ## Important 
 - The mazes are random and not tested that thoroughly. If you get an exception (rare) just restart
 - Customize the runners in the : Configuration file you can specify:
-  - pizel size: so that you can see more or better
+  - pixel size: so that you can see more or better
   - Screensize
   - FPS to control the speed of the simulation (Frames Per Second)
   - some more
