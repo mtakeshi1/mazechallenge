@@ -135,11 +135,12 @@ public class Maze implements IMaze {
             return getLos();
         }
 
+        stepsTaken++;
         if (newPosition.equals(finish)) {
             System.out.println("FINISH ! Steps taken : " + stepsTaken);
             endReached = true;
         }
-        stepsTaken++;
+
         player.setPosition(newPosition);
         return getLos();
     }
