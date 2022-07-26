@@ -1,15 +1,10 @@
 package mc.challenge.maze;
 
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.ui.Cell;
-import org.lwjgl.system.CallbackI;
 
-import javax.sound.sampled.Line;
-import java.awt.*;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static mc.challenge.maze.Maze.CellType.FINISH;
 import static mc.challenge.maze.Maze.CellType.FLOOR;
@@ -40,6 +35,10 @@ public class Maze {
     private final ExploredBounds exploredBounds = new ExploredBounds();
 
     public Maze(char[][] arr) {
+        arr = rotate(arr);
+        arr = rotate(arr);
+        arr = rotate(arr);
+        invertrows(arr);
         player = new Player(new Position(1, 1));
         matrix = new CellType[arr.length][arr[0].length];
         explored = new boolean[arr.length][arr[0].length];
@@ -71,6 +70,48 @@ public class Maze {
         );
     }
 
+    public static char[][] rotate(char[][] arrs) {
+        var mx = new char[arrs[0].length][arrs.length];
+
+        for (int r = 0; r < arrs.length; r++) {
+            for (int c = 0; c < arrs[0].length; c++) {
+                mx[c][r] = arrs[r][c];
+            }
+        }
+
+        return mx;
+    }
+
+    public static void invertrows(char[][] arr) {
+
+
+//        for (var a : arr) {
+//            invertcol(a);
+//        }
+        int top = 0;
+        int bottom = arr.length - 1;
+
+        while (top < bottom) {
+            var tmp = arr[top];
+            arr[top] = arr[bottom];
+            arr[bottom] = tmp;
+            top++;
+            bottom--;
+        }
+    }
+
+    private void invertcol(char[] arr) {
+        int left = 0;
+        int right = arr.length - 1;
+
+        while (left < right) {
+            var tmp = arr[left];
+            arr[left] = arr[right];
+            arr[right] = tmp;
+            left++;
+            right--;
+        }
+    }
 
     public CellType[][] doMove(Direction direction) {
         if (endReached) {
@@ -84,7 +125,7 @@ public class Maze {
         }
 
         if (newPosition.equals(finish)) {
-            System.out.println("FINISH !");
+            System.out.println("FINISH ! Steps taken : " + stepsTaken);
             endReached = true;
         }
         stepsTaken++;

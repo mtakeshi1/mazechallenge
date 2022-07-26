@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import mc.Configuration;
 import mc.challenge.Challenge;
 import mc.challenge.maze.Maze;
 import mc.challenge.maze.Maze.CellType;
@@ -13,7 +14,7 @@ import java.util.function.Consumer;
 
 public class GraphicalHelper {
 
-    private Maze maze;
+    private final Maze maze;
 
     public void draw() {
         maze.drawMaze(drawmaze);
@@ -22,17 +23,13 @@ public class GraphicalHelper {
 
     public GraphicalHelper(
             SpriteBatch batch,
-            int cell_size,
-            int offsetx,
-            int offsety,
-            Maze maze,
-            Challenge challenge
-    ) {
+            Maze maze
+            ) {
         this.batch = batch;
-        this.cell_size = cell_size;
-        this.offsetx = offsetx;
-        this.offsety = offsety;
-        this.challenge = challenge;
+        this.cell_size = Configuration.CELL_SIZE;
+        this.offsetx = Configuration.OFFSET_X;
+        this.offsety = Configuration.OFFSET_Y;
+        this.challenge = Configuration.challenge.get();
 
         this.maze = maze;
         wp = new Sprite(new Texture("./data/wp.png"));
@@ -49,7 +46,7 @@ public class GraphicalHelper {
     private Sprite wp;
     private Sprite player;
 
-    private Challenge challenge;
+    private final Challenge challenge;
 
     Consumer<CellType[][]> drawmaze = (matrix) -> {
 
@@ -128,5 +125,9 @@ public class GraphicalHelper {
 
     public void doMove() {
         maze.doMove(challenge.getMove());
+    }
+
+    public boolean finished() {
+        return maze.isEndReached();
     }
 }

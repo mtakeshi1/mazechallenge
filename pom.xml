@@ -51,9 +51,9 @@
             <classifier>natives-desktop</classifier>
         </dependency>
         <dependency>
-            <groupId>com.github.yellowstonegames</groupId>
-            <artifactId>SquidLib</artifactId>
-            <version>aa73551d86</version>
+            <groupId>com.github.yellowstonegames.SquidLib</groupId>
+            <artifactId>squidlib-util</artifactId>
+            <version>b6f045e243</version>
         </dependency>
     </dependencies>
 

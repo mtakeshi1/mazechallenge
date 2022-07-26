@@ -21,42 +21,41 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import mc.ChallengeImpl;
-import mc.challenge.maze.HeadlessMain;
-import mc.challenge.maze.Maze;
-import mc.challenge.maze.MazeFactory;
+
+import static mc.Configuration.mazes;
 
 public class GraphicalMain extends ApplicationAdapter {
     private Camera cam;
     private SpriteBatch batch;
     private GraphicalHelper graphicalHelper;
-    private HeadlessMain mazeRunner;
+
+    int mazecount = 0;
 
     @Override
     public void create() {
-
         batch = new SpriteBatch();
-
         cam = new OrthographicCamera(800, 800);
 
-
-//        Maze maze = MazeFactory.getEmptyMap(200, 200);
-//        Maze maze = MazeFactory.getScatterMap(200, 200);
-//        Maze maze = MazeFactory.get1WMap(200, 200);
-        Maze maze = MazeFactory.getDungeon(200, 200);
         graphicalHelper = new GraphicalHelper(
                 batch,
-                8,
-                100,
-                100,
-                maze,
-                new ChallengeImpl()
+                mazes.get(mazecount).get()
         );
 
     }
 
     @Override
     public void render() {
+
+        if (graphicalHelper.finished() && mazecount < mazes.size()) {
+            mazecount++;
+            if (mazecount < mazes.size()) {
+                graphicalHelper = new GraphicalHelper(
+                        batch,
+                        mazes.get(mazecount).get()
+                );
+
+            }
+        }
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
