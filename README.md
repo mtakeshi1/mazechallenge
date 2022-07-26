@@ -2,7 +2,8 @@
 ## Welcome to this code challenge !
 
 ### What is expected ?
-Write code and send it to me or leave a pullrequest
+Write code to find you way through a maze, while only getting feedback through a 13x13 line of sight array
+Send it to me or leave a pullrequest
 
 Basicly you start by:
 - implementing: ChallengeImpl.java (current code will only run to see something moving on the screen)
