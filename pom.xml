@@ -9,6 +9,12 @@
     <properties>
         <libgdx.version>1.10.0</libgdx.version>
     </properties>
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
     <build>
         <plugins>
             <plugin>
@@ -43,6 +49,11 @@
             <artifactId>gdx-freetype-platform</artifactId>
             <version>${libgdx.version}</version>
             <classifier>natives-desktop</classifier>
+        </dependency>
+        <dependency>
+            <groupId>com.github.yellowstonegames</groupId>
+            <artifactId>SquidLib</artifactId>
+            <version>aa73551d86</version>
         </dependency>
     </dependencies>
 

@@ -1,5 +1,11 @@
 package mc.challenge.maze;
 
+import squidpony.squidgrid.mapping.ConnectingMapGenerator;
+import squidpony.squidgrid.mapping.DungeonGenerator;
+import squidpony.squidgrid.mapping.DungeonUtility;
+import squidpony.squidgrid.mapping.IDungeonGenerator;
+import squidpony.squidmath.RNG;
+
 import java.util.Random;
 
 import static mc.challenge.maze.Maze.CellType.WALL;
@@ -42,5 +48,32 @@ public class MazeFactory {
         }
 
         return map;
+    }
+
+    public static Maze get1WMap(int rows, int cols) {
+        IDungeonGenerator gen = new ConnectingMapGenerator(150, 150, 1, 1, new RNG(), 1, 0.5);
+
+        char[][] generated = gen.generate();
+        DungeonGenerator dg = new DungeonGenerator(20, 20);
+        generated = dg.generate(generated);
+        generated[dg.stairsDown.x][dg.stairsDown.y] = '>';
+        generated[dg.stairsUp.x][dg.stairsUp.y] = '<';
+
+        DungeonUtility.debugPrint(generated);
+
+        return new Maze(generated);
+    }
+
+
+    public static Maze getDungeon(int rows, int cols) {
+        DungeonGenerator dg = new DungeonGenerator(rows,cols);
+
+        char[][] generated = dg.generate();
+        generated[dg.stairsDown.x][dg.stairsDown.y] = '>';
+        generated[dg.stairsUp.x][dg.stairsUp.y] = '<';
+
+        DungeonUtility.debugPrint(generated);
+
+        return new Maze(generated);
     }
 }

@@ -11,7 +11,9 @@ import java.util.Random;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static mc.challenge.maze.Maze.CellType.FINISH;
 import static mc.challenge.maze.Maze.CellType.FLOOR;
+import static mc.challenge.maze.Maze.CellType.START;
 import static mc.challenge.maze.Maze.CellType.UNKNOWN;
 import static mc.challenge.maze.Maze.CellType.WALL;
 
@@ -30,12 +32,35 @@ public class Maze {
     private final Player player;
     private final CellType[][] matrix;
     private final boolean[][] explored;
-    private final Position finish;
+    private Position finish;
     private int stepsTaken = 0;
     private boolean endReached = false;
 
 
     private final ExploredBounds exploredBounds = new ExploredBounds();
+
+    public Maze(char[][] arr) {
+        player = new Player(new Position(1, 1));
+        matrix = new CellType[arr.length][arr[0].length];
+        explored = new boolean[arr.length][arr[0].length];
+        for (int r = 0; r < arr.length; r++) {
+            for (int c = 0; c < arr[0].length; c++) {
+                switch (arr[r][c]) {
+                    case '.' -> matrix[r][c] = FLOOR;
+                    case '#' -> matrix[r][c] = WALL;
+                    case '<' -> {
+                        matrix[r][c] = START;
+                        player.setPosition(new Position(r, c));
+                    }
+                    case '>' -> {
+                        finish = new Position(r, c);
+                        matrix[r][c] = FINISH;
+                    }
+                }
+            }
+        }
+    }
+
 
     public Maze(int rows, int cols) {
         this(
@@ -65,13 +90,6 @@ public class Maze {
         stepsTaken++;
         player.setPosition(newPosition);
         return getLos();
-
-//        for (int r = newPosition.row() - 1; r <= newPosition.row() + 1; r++) {
-//            for (int c = newPosition.col() - 1; c <= newPosition.col() + 1; c++) {
-//                explore(new Position(r, c));
-//            }
-//        }
-//        return null;
     }
 
     CellType[][] getLos() {
@@ -119,6 +137,7 @@ public class Maze {
 
         return view;
     }
+
 
     public Maze(int rows, int cols, Position start, Position finish) {
         if (rows < 5) throw new IllegalArgumentException("rows must be >= 5");

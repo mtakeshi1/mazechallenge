@@ -41,7 +41,9 @@ public class GraphicalMain extends ApplicationAdapter {
 
 
 //        Maze maze = MazeFactory.getEmptyMap(200, 200);
-        Maze maze = MazeFactory.getScatterMap(200, 200);
+//        Maze maze = MazeFactory.getScatterMap(200, 200);
+//        Maze maze = MazeFactory.get1WMap(200, 200);
+        Maze maze = MazeFactory.getDungeon(200, 200);
         graphicalHelper = new GraphicalHelper(
                 batch,
                 8,
@@ -50,11 +52,6 @@ public class GraphicalMain extends ApplicationAdapter {
                 maze,
                 new ChallengeImpl()
         );
-
-//        mazeRunner = new HeadlessMain(
-//                new ChallengeImpl(),
-//                maze
-//        );
 
     }
 
