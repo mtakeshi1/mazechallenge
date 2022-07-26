@@ -1,9 +1,10 @@
-package mc;
+package mc.myname_renamethis;
 
 import mc.challenge.Challenge;
 import mc.challenge.maze.Direction;
 import mc.challenge.maze.IMaze;
 
+import java.util.Arrays;
 import java.util.Random;
 
 public class ChallengeImpl implements Challenge {
@@ -31,8 +32,21 @@ public class ChallengeImpl implements Challenge {
     public Direction getMove() {
 
 
-        var vis = maze.getLos();
-        maze.getLos();
+        var los = maze.getLineOfSight();
+
+        // Line of sight printed with 'you' in the middle at: [6,6]
+        // UNK = unknown
+        // WLL = wall
+        // FLR = floor
+        // SRT = start
+        // FSH = finish
+        System.out.println();
+        for (var v : los) {
+            System.out.println(Arrays.toString(v));
+        }
+        System.out.println();
+
+        maze.getLineOfSight();
 
         if (counter2 == 0) {
             index++;

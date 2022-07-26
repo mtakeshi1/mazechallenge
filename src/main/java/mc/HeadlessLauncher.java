@@ -1,6 +1,7 @@
 package mc;
 
 import mc.challenge.maze.HeadlessMain;
+import mc.myname_renamethis.ChallengeImpl;
 
 public class HeadlessLauncher {
     public static void main(String[] args) {

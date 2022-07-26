@@ -3,6 +3,7 @@ package mc;
 import mc.challenge.Challenge;
 import mc.challenge.maze.Maze;
 import mc.challenge.maze.MazeFactory;
+import mc.myname_renamethis.ChallengeImpl;
 
 import java.util.List;
 import java.util.function.Supplier;

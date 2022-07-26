@@ -61,7 +61,7 @@ public class Maze implements IMaze {
                 }
             }
         }
-        getLos();
+        getLineOfSight();
     }
 
     public Maze(int rows, int cols) {
@@ -132,7 +132,7 @@ public class Maze implements IMaze {
         var type = matrix[newPosition.row()][newPosition.col()];
 
         if (type == WLL) {
-            return getLos();
+            return getLineOfSight();
         }
 
         stepsTaken++;
@@ -142,10 +142,10 @@ public class Maze implements IMaze {
         }
 
         player.setPosition(newPosition);
-        return getLos();
+        return getLineOfSight();
     }
 
-    public CellType[][] getLos() {
+    public CellType[][] getLineOfSight() {
 
         var view = new CellType[13][13];
 
@@ -221,7 +221,7 @@ public class Maze implements IMaze {
 
 
         player = new Player(start);
-        getLos();
+        getLineOfSight();
     }
 
     private void fillMatrixWithFloor() {
