@@ -16,6 +16,7 @@ I will compare the code with others both by
 - maybe memory
 
 ## Where do I start ?
+- clone and import into IntelliJ idea (others not tested)
 - GraphicalLauncher: starts the code with a view (the view won't be there when I bench it)
   - try this first just to get a feel what it does
 - HeadlessLauncher: is there for you to test faster, and is more similar to the way I run it
