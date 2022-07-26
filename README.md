@@ -12,12 +12,15 @@ I will compare the code with others both by
 
 ## Where do I start ?
 - GraphicalLauncher: starts the code with a view (the view won't be there when I bench it)
+  - try this first just to get a feel what it does
 - HeadlessLauncher: is there for you to test faster, and is more similar to the way I run it
+  - try this seconds and see it's the same as first, but headless
 - Test both to get a feel of what it does
-- rename the : myname_renamethis map (choose something [a-z] and unique)
+- Rename the : myname_renamethis map (choose something [a-z] and unique)
   - open the ChallengeImpl within that package
   - setMap(IMaze maze) is called by the program by default and you should implement it as is done
   - here you have access to : maze.getLineOfSight
+  - you should implement the 'Direction getMove()' for this
   - 'public Direction getMove() {' is called for every move, here you must supply a Direction
   - ONLY use the Imaze interface and the enums to work with from the supplied code
 
@@ -29,14 +32,14 @@ That input will be : a 13x13 grid with 'your' position in the middle. The values
 Now you must find your way from Start to finish tile !
 
 ## Important 
-- the mazes are random and not tested that thoroughly. If you get an exception (rare) just restart
+- The mazes are random and not tested that thoroughly. If you get an exception (rare) just restart
 - Customize the runners in the : Configuration file you can specify:
   - pizel size: so that you can see more or better
   - Screensize
-  - FPS to control the speed of the simulation
+  - FPS to control the speed of the simulation (Frames Per Second)
   - some more
   - Choose what example mazes are run so that you can try and test/debug better.
 
 
 I hope you will enjoy this challenge ! 
-for questions you can ask 'deboder'
+For questions you can ask 'deboder'
