@@ -22,9 +22,9 @@ I will compare the code with others both by
   - ONLY use the Imaze interface and the enums to work with from the supplied code
 
 ## What should it do ?
-You will be presented a maze, every iteration a 'Direction' (enum) will be asked from you as response. \n
-You must choose your new direction by storing and computing input from : maze.getLineOfSight. \n
-That input will be : a 13x13 grid with 'your' position in the middle. The values are enums(CellType) \n  
+You will be presented a maze, every iteration a 'Direction' (enum) will be asked from you as response.  
+You must choose your new direction by storing and computing input from : maze.getLineOfSight.  
+That input will be : a 13x13 grid with 'your' position in the middle. The values are enums(CellType)
 
 Now you must find your way from Start to finish tile !
 
