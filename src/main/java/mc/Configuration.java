@@ -15,7 +15,7 @@ public class Configuration {
 
 
     ///////// Graphical
-    public static int FRAME_RATE = 200; // (max) FPS -> ALSO UPDATES PLAYER FASTER/SLOWER
+    public static int FRAME_RATE = 30; // (max) FPS -> ALSO UPDATES PLAYER FASTER/SLOWER
     public static int WINDOW_HEIGHT = 1200;
     public static int WINDOW_WIDTH = 1200;
     public static int CELL_SIZE = 16; // size of a drawn square/cell

@@ -9,12 +9,12 @@ I will compare the code with others both by
 - cpu benchmark
 - minimum moves average
 - maybe memory
-- 
-## Where do i start ?
-- GraphicalLauncher: starts the code with a view (the view won't be there when i bench it)
-- HeadlessLauncher: is there for you to test faster, and is more similar to the way i run it
+
+## Where do I start ?
+- GraphicalLauncher: starts the code with a view (the view won't be there when I bench it)
+- HeadlessLauncher: is there for you to test faster, and is more similar to the way I run it
 - Test both to get a feel of what it does
-- rename the : myname_copythis map (choose something [a-z] and unique)
+- rename the : myname_renamethis map (choose something [a-z] and unique)
   - open the ChallengeImpl within that package
   - setMap(IMaze maze) is called by the program by default and you should implement it as is done
   - here you have access to : maze.getLineOfSight
@@ -33,6 +33,7 @@ Now you must find your way from Start to finish tile !
 - Customize the runners in the : Configuration file you can specify:
   - pizel size: so that you can see more or better
   - Screensize
+  - FPS to control the speed of the simulation
   - some more
   - Choose what example mazes are run so that you can try and test/debug better.
 
