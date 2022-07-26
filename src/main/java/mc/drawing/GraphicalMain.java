@@ -69,7 +69,6 @@ public class GraphicalMain extends ApplicationAdapter {
         }
 
         cam.update();
-
         graphicalHelper.doMove();
 
         batch.begin();

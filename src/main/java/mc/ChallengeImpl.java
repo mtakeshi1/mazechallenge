@@ -4,7 +4,6 @@ import mc.challenge.Challenge;
 import mc.challenge.maze.Direction;
 import mc.challenge.maze.IMaze;
 
-import java.util.Arrays;
 import java.util.Random;
 
 public class ChallengeImpl implements Challenge {
@@ -19,6 +18,10 @@ public class ChallengeImpl implements Challenge {
 
 
     int counter = 1;
+    int counter2 = 1;
+    int index = 0;
+
+    Direction[] dirs = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
 
     /**
      * This method will be called each iteration by the program.
@@ -31,47 +34,14 @@ public class ChallengeImpl implements Challenge {
         var vis = maze.getLos();
         maze.getLos();
 
-
-        for (var m : vis) {
-            System.out.println(Arrays.toString(m));
+        if (counter2 == 0) {
+            index++;
+            index %= 4;
+            counter++;
+            counter2 = counter;
         }
-        System.out.println();
-
-
-//        for (int x = 1; x < 200; x++) {
-//            for (int y = 1; y < x; y++) {
-//                maze.doMove(Direction.EAST);
-//            }
-//
-//            for (int y = 1; y < x; y++) {
-//                maze.doMove(Direction.SOUTH);
-//            }
-//            for (int y = 1; y < x; y++) {
-//                maze.doMove(Direction.WEST);
-//            }
-//
-//            for (int y = 1; y < x; y++) {
-//                maze.doMove(Direction.NORTH);
-//            }
-//        }
-
-        return switch (rnd.nextInt(4)) {
-
-            case 0 -> Direction.EAST;
-
-            case 1 -> Direction.WEST;
-
-            case 2 -> Direction.NORTH;
-
-            case 3 -> Direction.SOUTH;
-
-            default -> throw new IllegalStateException("Unexpected value: " + rnd.nextInt(4));
-        };
-//        Maze.CellType[][] cellTypes = maze.visitedMatrix();
-//        Position playerPosition = maze.getPlayerPosition();
-//        int stepsTaken = maze.getStepsTaken();
-
-//        return updownlst.get(counter++ % updownlst.size());
+        counter2--;
+        return dirs[index];
     }
 
 }
