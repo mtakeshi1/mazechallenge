@@ -35,7 +35,7 @@ public class ChallengeImpl implements Challenge {
      */
     @Override
     public void handleLineOfSightUpdate(CellType[][] los) {
-        printLOSUpdate(los); // Uncomment this for debug printing the array
+//        printLOSUpdate(los); // Uncomment this for debug printing the array
     }
 
     /**
