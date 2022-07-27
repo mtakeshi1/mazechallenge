@@ -38,6 +38,7 @@ public class Configuration {
     public static final int CELL_SIZE = 16; // size of a drawn square/cell
     public static final int OFFSET_X = 100; // draw screen from left offset
     public static final int OFFSET_Y = 100; // draw screen from bottom offset
+
     public static final Color WALLCOLOR = Color.BROWN;
     public static final Color STARTCOLOR = Color.RED;
     public static final Color FINISHCOLOR = Color.GREEN;

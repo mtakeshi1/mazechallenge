@@ -36,6 +36,7 @@ public class GraphicalHelper {
         playerSprite = new Sprite(new Texture("./data/player.png"));
         playerSprite.setSize(CELL_SIZE, CELL_SIZE);
         wp.setSize(CELL_SIZE, CELL_SIZE);
+        challenge.handleLineOfSightUpdate(maze.getLineOfSight());
 
     }
 

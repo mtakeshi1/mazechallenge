@@ -17,6 +17,7 @@ public class HeadlessMain {
 
         this.challenge = challenge;
         this.maze = maze;
+        challenge.handleLineOfSightUpdate(maze.getLineOfSight());
     }
 
     public void doAllMoves() {
