@@ -19,18 +19,18 @@ package mc.challenge.maze;
  * |   )         `.       S       .`         (    |
  */
 public enum Direction {
-    NORTH(new int[]{1, 0}),
-    EAST(new int[]{0, 1}),
-    SOUTH(new int[]{-1, 0}),
-    WEST(new int[]{0, -1});
+    NORTH(new Position(1, 0)),
+    EAST(new Position(0, 1)),
+    SOUTH(new Position(-1, 0)),
+    WEST(new Position(0, -1));
 
-    private final int[] transposition;
+    private final Position transposition;
 
-    Direction(int[] transposition) {
+    Direction(Position transposition) {
         this.transposition = transposition;
     }
 
-    int[] getTP() {
+    public Position getTP() {
         return transposition;
     }
 }

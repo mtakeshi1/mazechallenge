@@ -135,7 +135,7 @@ public class Maze {
         if (endReached) {
             return;
         }
-        Position newPosition = player.getPosition().plus(direction.getTP()[0], direction.getTP()[1]);
+        Position newPosition = player.getPosition().plus(direction.getTP().row(), direction.getTP().col());
         var type = matrix[newPosition.row()][newPosition.col()];
 
         if (type == WLL) {
