@@ -23,10 +23,12 @@ public class Configuration {
     }
 
     /**
-     * Dimenstions for generated mazes
+     * Dimentions for generated mazes
      */
-    private static final int SMALL = 15;
-    private static final int MEDIUM = 100;
+    public static final int SMALL = 15;
+    public static final int MEDIUM = 100;
+    public static final int LARGE = 500;
+    public static final int HUGE = 1500;
 
 
     ///////// Graphical
@@ -61,10 +63,26 @@ public class Configuration {
     public static final List<Supplier<Maze>> MAZES = List.of(
             () -> MazeFactory.getEmptyMap(SMALL, SMALL),
             () -> MazeFactory.getEmptyMap(MEDIUM, MEDIUM),
-            () -> MazeFactory.getFlowingCave(MEDIUM, MEDIUM),
             () -> MazeFactory.getScatterMap(SMALL, SMALL),
             () -> MazeFactory.get1WMap(SMALL, SMALL),
-            () -> MazeFactory.getDungeon(SMALL, SMALL)
+            () -> MazeFactory.getDungeon(SMALL, SMALL),
+
+            () -> MazeFactory.getScatterMap(MEDIUM, MEDIUM),
+            () -> MazeFactory.get1WMap(MEDIUM, MEDIUM),
+            () -> MazeFactory.getFlowingCave(MEDIUM, MEDIUM),
+            () -> MazeFactory.getDungeon(MEDIUM, MEDIUM),
+            
+            () -> MazeFactory.getScatterMap(LARGE, LARGE),
+            () -> MazeFactory.get1WMap(LARGE, LARGE),
+            () -> MazeFactory.getFlowingCave(LARGE, LARGE),
+            () -> MazeFactory.getDungeon(LARGE, LARGE),
+            
+            
+            () -> MazeFactory.getScatterMap(HUGE, HUGE),
+            () -> MazeFactory.get1WMap(HUGE, HUGE),
+            () -> MazeFactory.getFlowingCave(HUGE, HUGE),
+            () -> MazeFactory.getDungeon(HUGE, HUGE)
+
     );
 
 

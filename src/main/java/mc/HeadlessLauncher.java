@@ -14,6 +14,7 @@ public class HeadlessLauncher {
      * Run all configured mazes.
      */
     public static void main(String[] args) {
+
         for (var maze : Configuration.MAZES) {
             new HeadlessMain(new ChallengeImpl(), maze.get()).doAllMoves();
         }

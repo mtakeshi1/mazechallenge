@@ -13,6 +13,9 @@ import java.util.Random;
 import static mc.challenge.maze.ArrayUtil.FOUR_DIRECTIONS;
 import static mc.challenge.maze.ArrayUtil.invertrows;
 import static mc.challenge.maze.ArrayUtil.rotate;
+import static mc.challenge.maze.Maze.CellType.FLR;
+import static mc.challenge.maze.Maze.CellType.FSH;
+import static mc.challenge.maze.Maze.CellType.SRT;
 import static mc.challenge.maze.Maze.CellType.WLL;
 
 /**
@@ -37,19 +40,18 @@ public class MazeFactory {
             System.out.println();
             System.out.println("---------------------------------------");
             for (int r = rows - 1; r >= 0; r--) {
-                System.out.println();
+                var sb = new StringBuilder();
                 for (int c = 0; c < cols; c++) {
                     switch (map.getTile(r, c)) {
-                        case WLL -> System.out.print('#');
-                        case FLR -> System.out.print('.');
-                        case SRT -> System.out.print('<');
-                        case FSH -> System.out.print('>');
-                        case UNK -> System.out.print('?');
+                        case WLL -> sb.append('#');
+                        case FLR -> sb.append('.');
+                        case SRT -> sb.append('<');
+                        case FSH -> sb.append('>');
+                        case UNK -> sb.append('?');
                     }
                 }
+                System.out.println(sb);
             }
-            System.out.println();
-
             System.out.println();
         }
         return map;
@@ -78,6 +80,17 @@ public class MazeFactory {
                     }
 
                 }
+
+                if (map.getTile(r, c) == SRT || map.getTile(r, c) == FSH) {
+                    for (int[] dir : FOUR_DIRECTIONS) {
+                        map.setTile(new Position(r + dir[0], c + dir[1]), FLR);
+                        map.setTile(new Position(r + dir[0] * 2, c + dir[1] * 2), FLR);
+                        map.setTile(new Position(r + dir[0] * 3, c + dir[1] * 3), FLR);
+                        map.setTile(new Position(r + dir[0] * 4, c + dir[1] * 4), FLR);
+                    }
+
+                }
+
             }
         }
 
@@ -87,6 +100,7 @@ public class MazeFactory {
     public static Maze get1WMap(int rows, int cols) {
         IDungeonGenerator gen = new ConnectingMapGenerator(rows, cols, 1, 1, new RNG(), 1, 0.5);
         char[][] generated = gen.generate();
+
 
         DungeonGenerator dg = new DungeonGenerator(20, 20);
         dg.addStairs();

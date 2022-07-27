@@ -5,6 +5,7 @@ import mc.challenge.Challenge;
 import mc.challenge.maze.Direction;
 import mc.challenge.maze.HeadlessMain;
 import mc.challenge.maze.Maze.CellType;
+import mc.challenge.maze.MazeFactory;
 
 import java.util.Arrays;
 
@@ -58,13 +59,22 @@ public class ChallengeImpl implements Challenge {
     }
 
 
-     //I put a convenience launcher here in case you want to run a single maze headless.
+    //I put a convenience launcher here in case you want to run a single maze headless.
     public static void main(String[] args) {
-        new HeadlessMain(new ChallengeImpl(), Configuration.MAZES.get(0).get()).doAllMoves();
+        new HeadlessMain(new ChallengeImpl(),
+//                MazeFactory.getFlowingCave(
+//                MazeFactory.get1WMap(
+                MazeFactory.getDungeon(
+                        Configuration.SMALL, Configuration.SMALL
+//                        Configuration.MEDIUM, Configuration.MEDIUM
+//                        Configuration.LARGE, Configuration.LARGE
+//                        Configuration.HUGE, Configuration.HUGE
+                )
+        ).doAllMoves();
     }
 
 
-     //Just here to show explain how the Line Of Sight array is build.
+    //Just here to show explain how the Line Of Sight array is build.
     private static void printLOSUpdate(CellType[][] los) {
         // [13,13] Line of sight array printed with 'you' in the middle at: [6,6]
         // UNK = unknown

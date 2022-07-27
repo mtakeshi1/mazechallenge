@@ -26,7 +26,7 @@ public class GraphicalHelper {
     private SpriteBatch batch;
     private Sprite wp;
     private Sprite playerSprite;
-    private Challenge challenge;
+    private final Challenge challenge;
 
     public GraphicalHelper(SpriteBatch batch, Maze maze) {
         this.batch = batch;
