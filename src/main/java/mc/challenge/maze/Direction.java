@@ -1,6 +1,9 @@
 package mc.challenge.maze;
 
 /**
+ * An enum for the 4 main directions
+ *
+ *
  * |   )          .`      N      `.          (    |
  * |  (         .`   A    |        `.         )   |
  * |   )      .`     <\> )|(         `.      (    |

@@ -22,8 +22,12 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import static mc.Configuration.mazes;
+import static mc.Configuration.MAZES;
 
+/**
+ * This used libGDX to run a graphical program.
+ * from here helpers are created to deal with the challenge part.
+ */
 public class GraphicalMain extends ApplicationAdapter {
     private Camera cam;
     private SpriteBatch batch;
@@ -38,7 +42,7 @@ public class GraphicalMain extends ApplicationAdapter {
 
         graphicalHelper = new GraphicalHelper(
                 batch,
-                mazes.get(mazecount).get()
+                MAZES.get(mazecount).get()
         );
 
     }
@@ -46,12 +50,12 @@ public class GraphicalMain extends ApplicationAdapter {
     @Override
     public void render() {
 
-        if (graphicalHelper.finished() && mazecount < mazes.size()) {
+        if (graphicalHelper.finished() && mazecount < MAZES.size()) {
             mazecount++;
-            if (mazecount < mazes.size()) {
+            if (mazecount < MAZES.size()) {
                 graphicalHelper = new GraphicalHelper(
                         batch,
-                        mazes.get(mazecount).get()
+                        MAZES.get(mazecount).get()
                 );
 
             }
@@ -70,7 +74,7 @@ public class GraphicalMain extends ApplicationAdapter {
 
         cam.update();
         graphicalHelper.doMove();
-
+        graphicalHelper.update();
         batch.begin();
         graphicalHelper.draw();
         batch.end();

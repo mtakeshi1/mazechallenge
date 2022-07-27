@@ -2,8 +2,10 @@ package mc.challenge.maze;
 
 import mc.challenge.Challenge;
 
+/**
+ * Runner for the challenge ( won't be used for grading )
+ */
 public class HeadlessMain {
-
 
     private final Challenge challenge;
     private final Maze maze;
@@ -15,20 +17,12 @@ public class HeadlessMain {
 
         this.challenge = challenge;
         this.maze = maze;
-        challenge.setMap(maze);
-    }
-
-
-    /**
-     * return true is moved, false if it was a wall
-     */
-    Maze.CellType[][] doMove() {
-        return maze.doMove(challenge.getMove());
     }
 
     public void doAllMoves() {
         while (!maze.isEndReached()) {
             maze.doMove(challenge.getMove());
+            challenge.handleLineOfSightUpdate(maze.getLineOfSight());
 
             if (maze.getStepsTaken() > 10000000) {
                 throw new RuntimeException("Sorry, too many steps");

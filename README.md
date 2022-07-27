@@ -2,15 +2,17 @@
 ## Welcome to this code challenge !
 
 ### What is expected ?
-Write code to find you way through a maze, while only getting feedback through a 13x13 line of sight array
-Send it to me or leave a pullrequest
+Write code to find your way through a maze, while only getting feedback through a 13x13 line of sight array  
+that is returned after each move
+
 
 Basicly you start by:
-- implementing: ChallengeImpl.java (current code will only run to see something moving on the screen)
 - running: GraphicalLauncher.java
+- implement: ChallengeImpl.java (current code will only run to see something moving on the screen)
+- repeat until done
 
 ### What will happen with it ?
-I will compare the code with others both by
+I will compare the code with others by:
 - cpu benchmark
 - minimum moves average
 - maybe memory
@@ -22,15 +24,16 @@ I will compare the code with others both by
 - HeadlessLauncher: is there for you to test faster, and is more similar to the way I run it
   - try this seconds and see it's the same as first, but headless
 - Test both to get a feel of what it does
-- Rename the : myname_renamethis map (choose something [a-z] and unique)
+- open mc.renamebeforepr package
   - open the **ChallengeImpl** within that package
-  - setMap(IMaze maze) is called by the program by default and you should implement it as is done
-  - here you have access to : maze.getLineOfSight
-  - you should implement the 'Direction getMove()' for this
-  - 'public Direction getMove() {' is called for every move, here you must supply a Direction
-  - ONLY use the Imaze interface and the enums to work with from the supplied code
+  - public void handleLineOfSightUpdate(CellType[][] los) { 
+    - is called after every move supplying you with the current 360 degree line of sight with you in the middle
+    - create you own datastructure and process the (CellType[][] los) that is given
+  - public Direction getMove()
+    - is called before every move
+    - needs you to choose/return a Direction enum (NORTH, SOUTH, EAST, WEST)
 - The **ChallengeImpl** should be the only file you **need** to change
-- You can add other files within your self named package
+  - You can add other files within the same package
 
 
 ## What should it do ?
@@ -41,6 +44,7 @@ That input will be : a 13x13 grid with 'your' position in the middle. The values
 Now you must find your way from Start to finish tile !
 
 ## When i am done
+Rename your folder to something with your (fake)name preferably
 Best would be if you could leave a Pull Request to github
 If you are really not able you could send me your renamed package with the **file implementing Challenge**
 

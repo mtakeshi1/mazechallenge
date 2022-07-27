@@ -12,115 +12,93 @@ import mc.challenge.maze.Position;
 
 import java.util.function.Consumer;
 
+import static mc.Configuration.CELL_SIZE;
+import static mc.Configuration.OFFSET_X;
+import static mc.Configuration.OFFSET_Y;
+
+/**
+ * Helps connecting the Graphical runner with the challenge code.
+ * - should be merged a bit with the headless one
+ */
 public class GraphicalHelper {
 
     private final Maze maze;
+    private SpriteBatch batch;
+    private Sprite wp;
+    private Sprite playerSprite;
+    private Challenge challenge;
+
+    public GraphicalHelper(SpriteBatch batch, Maze maze) {
+        this.batch = batch;
+        this.challenge = Configuration.challenge.get();
+        this.maze = maze;
+        wp = new Sprite(new Texture("./data/wp.png"));
+        playerSprite = new Sprite(new Texture("./data/player.png"));
+        playerSprite.setSize(CELL_SIZE, CELL_SIZE);
+        wp.setSize(CELL_SIZE, CELL_SIZE);
+
+    }
+
+    /**
+     * A consumer that can be passed to the maze.
+     * A bit of an improvisation to keep the maze decoupled from graphical code.
+     * Another solution would probably be better.
+     */
+    Consumer<CellType[][]> drawmaze = mx -> {
+
+
+        wp.setColor(Configuration.BORDERCOLOR);
+        for (int r = 0; r < mx.length + 2; r++) {
+            wp.setPosition((float) OFFSET_X - CELL_SIZE, (float) OFFSET_Y - CELL_SIZE + r * CELL_SIZE);
+            wp.draw(batch);
+            wp.setPosition((float) OFFSET_X + CELL_SIZE * mx[0].length, (float) OFFSET_Y - CELL_SIZE + r * CELL_SIZE);
+            wp.draw(batch);
+        }
+        for (int c = 0; c < mx[0].length + 2; c++) {
+            wp.setPosition((float) OFFSET_Y - CELL_SIZE + c * CELL_SIZE, (float) OFFSET_X - CELL_SIZE);
+            wp.draw(batch);
+            wp.setPosition((float) OFFSET_Y - CELL_SIZE + c * CELL_SIZE, (float) OFFSET_X + CELL_SIZE * mx.length);
+            wp.draw(batch);
+        }
+
+        for (int r = 0; r < mx.length; r++) {
+            for (int c = 0; c < mx[0].length; c++) {
+                wp.setPosition((float) OFFSET_X + c * CELL_SIZE, (float) OFFSET_Y + r * CELL_SIZE);
+                switch (mx[r][c]) {
+                    case WLL -> wp.setColor(Configuration.WALLCOLOR);
+                    case FLR -> wp.setColor(Configuration.FLOORCOLOR);
+                    case SRT -> wp.setColor(Configuration.STARTCOLOR);
+                    case FSH -> wp.setColor(Configuration.FINISHCOLOR);
+                    case UNK -> wp.setColor(Configuration.UNKNOWNCOLOR);
+                }
+                wp.draw(batch);
+                wp.setColor(Color.BLACK);
+                wp.setAlpha(.5f);
+                wp.draw(batch);
+                wp.setAlpha(1f);
+            }
+        }
+    };
+
+    Consumer<Position> drawplayer = p -> {
+        playerSprite.setPosition(
+                (float) p.col() * CELL_SIZE + OFFSET_X,
+                (float) p.row() * CELL_SIZE + OFFSET_Y
+        );
+        playerSprite.draw(batch);
+    };
 
     public void draw() {
         maze.drawMaze(drawmaze);
         maze.drawPlayer(drawplayer);
     }
 
-    public GraphicalHelper(
-            SpriteBatch batch,
-            Maze maze
-            ) {
-        this.batch = batch;
-        this.cell_size = Configuration.CELL_SIZE;
-        this.offsetx = Configuration.OFFSET_X;
-        this.offsety = Configuration.OFFSET_Y;
-        this.challenge = Configuration.challenge.get();
-        this.maze = maze;
-        challenge.setMap(maze);
-        wp = new Sprite(new Texture("./data/wp.png"));
-        player = new Sprite(new Texture("./data/player.png"));
-        player.setSize(cell_size, cell_size);
-        wp.setSize(cell_size, cell_size);
-
-    }
-
-    private SpriteBatch batch;
-    private int cell_size;
-    private int offsetx;
-    private int offsety;
-    private Sprite wp;
-    private Sprite player;
-
-    private final Challenge challenge;
-
-    Consumer<CellType[][]> drawmaze = (matrix) -> {
-
-
-        wp.setColor(Color.WHITE);
-        for (int r = 0; r < matrix.length + 2; r++) {
-            wp.setPosition(offsetx - cell_size, offsety - cell_size + r * cell_size);
-            wp.draw(batch);
-            wp.setPosition(offsetx + cell_size * matrix[0].length, offsety - cell_size + r * cell_size);
-            wp.draw(batch);
-        }
-        for (int c = 0; c < matrix[0].length + 2; c++) {
-            wp.setPosition(offsety - cell_size + c * cell_size, offsetx - cell_size);
-            wp.draw(batch);
-            wp.setPosition(offsety - cell_size + c * cell_size, offsetx + cell_size * matrix.length);
-            wp.draw(batch);
-        }
-
-        for (int r = 0; r < matrix.length; r++) {
-            for (int c = 0; c < matrix[0].length; c++) {
-                wp.setPosition(offsetx + c * cell_size, offsety + r * cell_size);
-                switch (matrix[r][c]) {
-                    case WLL -> wp.setColor(Color.BROWN);
-                    case FLR -> wp.setColor(Color.SALMON);
-                    case SRT -> wp.setColor(Color.RED);
-                    case FSH -> wp.setColor(Color.GREEN);
-                    case UNK -> wp.setColor(Color.BLACK);
-                }
-                wp.draw(batch);
-                wp.setColor(Color.BLACK);
-                wp.setAlpha(.5f);
-                wp.draw(batch);
-                wp.setAlpha(1f);
-            }
-        }
-
-
-    };
-
-
-    Consumer<CellType[][]> drawFOV = (matrix) -> {
-        for (int r = 0; r < matrix.length; r++) {
-            for (int c = 0; c < matrix[0].length; c++) {
-                wp.setPosition(offsetx + c * cell_size, offsety + r * cell_size);
-                switch (matrix[r][c]) {
-                    case WLL -> wp.setColor(Color.BROWN);
-                    case FLR -> wp.setColor(Color.SALMON);
-                    case SRT -> wp.setColor(Color.RED);
-                    case FSH -> wp.setColor(Color.GREEN);
-                    case UNK -> wp.setColor(Color.BLACK);
-                }
-                wp.draw(batch);
-                wp.setColor(Color.BLACK);
-                wp.setAlpha(.5f);
-                wp.draw(batch);
-                wp.setAlpha(1f);
-            }
-        }
-    };
-
-    Consumer<Position> drawplayer = (p) -> {
-        player.setPosition(
-                p.col() * cell_size + offsetx,
-                p.row() * cell_size + offsety
-        );
-        player.draw(batch);
-    };
-
     public float getPlayerx() {
-        return player.getX();
+        return playerSprite.getX();
     }
 
     public float getPlayery() {
-        return player.getY();
+        return playerSprite.getY();
     }
 
     public void doMove() {
@@ -129,5 +107,9 @@ public class GraphicalHelper {
 
     public boolean finished() {
         return maze.isEndReached();
+    }
+
+    public void update() {
+        challenge.handleLineOfSightUpdate(maze.getLineOfSight());
     }
 }

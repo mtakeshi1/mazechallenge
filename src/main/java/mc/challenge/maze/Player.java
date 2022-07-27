@@ -1,5 +1,8 @@
 package mc.challenge.maze;
 
+/**
+ * Maybe in the future this will have more that only 'position' for other challenges.
+ */
 public class Player {
 
     private Position position;

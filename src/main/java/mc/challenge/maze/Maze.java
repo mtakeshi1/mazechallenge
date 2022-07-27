@@ -1,25 +1,30 @@
 package mc.challenge.maze;
 
 import com.badlogic.gdx.math.Vector2;
+import mc.challenge.Challenge;
 
 import java.util.Arrays;
 import java.util.Random;
 import java.util.function.Consumer;
 
-import static mc.challenge.maze.Maze.CellType.FSH;
+import static mc.challenge.maze.ArrayUtil.invertrows;
+import static mc.challenge.maze.ArrayUtil.isInsideMatrix;
+import static mc.challenge.maze.ArrayUtil.rotate;
 import static mc.challenge.maze.Maze.CellType.FLR;
+import static mc.challenge.maze.Maze.CellType.FSH;
 import static mc.challenge.maze.Maze.CellType.SRT;
 import static mc.challenge.maze.Maze.CellType.UNK;
 import static mc.challenge.maze.Maze.CellType.WLL;
 
-public class Maze implements IMaze {
+/**
+ * This class can create a maze but is also responsible for updating it.
+ * ( needs to be refactored tbh, but you should not need or touch this class )
+ */
+public class Maze {
 
-    private static final Random rnd = new Random();
-
-    public int getStepsTaken() {
-        return stepsTaken;
-    }
-
+    /**
+     * Mazes are made up of an array[][] of these types:
+     */
     public enum CellType {
         WLL, // WALL
         FLR, // FLOOR
@@ -28,13 +33,18 @@ public class Maze implements IMaze {
         UNK // UNKNOWN
     }
 
+    private static final Random rnd = new Random();
+
+    public int getStepsTaken() {
+        return stepsTaken;
+    }
+
     private final Player player;
     private final CellType[][] matrix;
     private final boolean[][] explored;
     private Position finish;
     private int stepsTaken = 0;
     private boolean endReached = false;
-
     private final ExploredBounds exploredBounds = new ExploredBounds();
 
     public Maze(char[][] arr) {
@@ -58,12 +68,17 @@ public class Maze implements IMaze {
                         finish = new Position(r, c);
                         matrix[r][c] = FSH;
                     }
+                    default -> throw new IllegalArgumentException(arr[r][c] + " is not supported input.");
                 }
             }
         }
         getLineOfSight();
     }
 
+    /**
+     * @deprecated working on builder/factory
+     */
+    @Deprecated(forRemoval = true)
     public Maze(int rows, int cols) {
         this(
                 rows,
@@ -73,126 +88,10 @@ public class Maze implements IMaze {
         );
     }
 
-    public static char[][] rotate(char[][] arrs) {
-        var mx = new char[arrs[0].length][arrs.length];
-
-        for (int r = 0; r < arrs.length; r++) {
-            for (int c = 0; c < arrs[0].length; c++) {
-                mx[c][r] = arrs[r][c];
-            }
-        }
-
-        return mx;
-    }
-
-    public static void invertrows(char[][] arr) {
-        int top = 0;
-        int bottom = arr.length - 1;
-
-        while (top < bottom) {
-            var tmp = arr[top];
-            arr[top] = arr[bottom];
-            arr[bottom] = tmp;
-            top++;
-            bottom--;
-        }
-    }
-
-    public static void invertrows(Object[][] arr) {
-        int top = 0;
-        int bottom = arr.length - 1;
-
-        while (top < bottom) {
-            var tmp = arr[top];
-            arr[top] = arr[bottom];
-            arr[bottom] = tmp;
-            top++;
-            bottom--;
-        }
-    }
-
-    private void invertcol(char[] arr) {
-        int left = 0;
-        int right = arr.length - 1;
-
-        while (left < right) {
-            var tmp = arr[left];
-            arr[left] = arr[right];
-            arr[right] = tmp;
-            left++;
-            right--;
-        }
-    }
-
-    public CellType[][] doMove(Direction direction) {
-        if (endReached) {
-            return new CellType[0][0];
-        }
-        Position newPosition = player.getPosition().plus(direction.getTP()[0], direction.getTP()[1]);
-        var type = matrix[newPosition.row()][newPosition.col()];
-
-        if (type == WLL) {
-            return getLineOfSight();
-        }
-
-        stepsTaken++;
-        if (newPosition.equals(finish)) {
-            System.out.println("FINISH ! Steps taken : " + stepsTaken);
-            endReached = true;
-        }
-
-        player.setPosition(newPosition);
-        return getLineOfSight();
-    }
-
-    public CellType[][] getLineOfSight() {
-
-        var view = new CellType[13][13];
-
-        for (var arr : view) {
-            Arrays.fill(arr, CellType.UNK);
-        }
-
-        var start = player.getPosition();
-
-        Vector2 v2 = new Vector2(0.5f, 0);
-        for (int j = 0; j < 360; j++) {
-            boolean blocked = false;
-            for (int i = 0; i < 25; i++) {
-                v2.setLength(v2.len() + 0.25f);
-                int r = (int) v2.y;
-                int c = (int) v2.x;
-                int mr = r + start.row();
-                int mc = c + start.col();
-                if (mr < 0 || mr >= matrix.length || mc < 0 || mc >= matrix[0].length) {
-                    continue;
-                }
-                r += 6;
-                c += 6;
-
-                CellType tile = matrix[mr][mc];
-                if (!blocked) {
-                    view[r][c] = tile;
-                    if (tile == WLL) {
-                        blocked = true;
-                    } else {
-                        view[r][c] = matrix[mr][mc];
-
-                    }
-                    explore(new Position(mr, mc));
-                } else if (view[r][c] == UNK) {
-                    view[r][c] = WLL;
-                }
-            }
-            v2.rotateDeg(1);
-            v2.setLength(0.5f);
-
-        }
-        invertrows(view);
-        return view;
-    }
-
-
+    /**
+     * @deprecated Clean this up and delegate to mazebuilder/factory
+     */
+    @Deprecated(forRemoval = true)
     public Maze(int rows, int cols, Position start, Position finish) {
         if (rows < 5) throw new IllegalArgumentException("rows must be >= 5");
         if (cols < 5) throw new IllegalArgumentException("cols must be >= 5");
@@ -224,6 +123,86 @@ public class Maze implements IMaze {
         getLineOfSight();
     }
 
+    /**
+     * Driving method for the challenge. When you implement {@link Challenge#getMove()} The returned value ends up here.
+     */
+    public void doMove(Direction direction) {
+        if (direction == null) throw new IllegalArgumentException("The direction may not be null");
+        if (endReached) {
+            return;
+        }
+        Position newPosition = player.getPosition().plus(direction.getTP()[0], direction.getTP()[1]);
+        var type = matrix[newPosition.row()][newPosition.col()];
+
+        if (type == WLL) {
+            return;
+        }
+
+        stepsTaken++;
+        if (newPosition.equals(finish)) {
+            System.out.println("FINISH ! Steps taken : " + stepsTaken);
+            endReached = true;
+        }
+
+        player.setPosition(newPosition);
+    }
+
+    /**
+     * Should be extended to support: angle selections, distances
+     */
+    public CellType[][] getLineOfSight() {
+
+        var view = new CellType[13][13];
+
+        for (var arr : view) {
+            Arrays.fill(arr, CellType.UNK);
+        }
+
+        var start = player.getPosition();
+
+        Vector2 v2 = new Vector2(0.5f, 0);
+        for (int j = 0; j < 360; j++) {
+            boolean blocked = false;
+            for (int i = 0; i < 25; i++) {
+                v2.setLength(v2.len() + 0.25f);
+                int r = (int) v2.y;
+                int c = (int) v2.x;
+                int mr = r + start.row();
+                int mc = c + start.col();
+                if (!isInsideMatrix(mr, mc, matrix)) {
+                    continue;
+                }
+
+                r += 6;
+                c += 6;
+
+                CellType tile = matrix[mr][mc];
+                if (!blocked) {
+                    view[r][c] = tile;
+                    if (tile == WLL) {
+                        blocked = true;
+                    } else {
+                        view[r][c] = matrix[mr][mc];
+
+                    }
+                    explore(new Position(mr, mc));
+                } else if (view[r][c] == UNK) {
+                    view[r][c] = WLL;
+                }
+            }
+            v2.rotateDeg(1);
+            v2.setLength(0.5f);
+
+        }
+        invertrows(view);
+        return view;
+    }
+
+
+    /**
+     * @deprecated Does not belong here.
+     */
+    @Deprecated(forRemoval = true)
     private void fillMatrixWithFloor() {
         for (int r = 0; r < matrix.length; r++) {
             for (int c = 0; c < matrix[0].length; c++) {
@@ -232,6 +211,10 @@ public class Maze implements IMaze {
         }
     }
 
+    /**
+     * @deprecated Does not belong here.
+     */
+    @Deprecated(forRemoval = true)
     private void wallEdges() {
         for (int r = 0; r < matrix.length; r++) {
             matrix[r][0] = WLL;
