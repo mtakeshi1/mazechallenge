@@ -266,13 +266,16 @@ public class MazeFactory {
     }
 
 
+    private static List<Maze> hugemazes = null;
     public static List<Maze> huge1wMazes() {
-        var list = new ArrayList<Maze>();
-        for (int x = 1; x <= 14; x++) {
-            list.add(MazeParser.loadMazeFromFile("width1huge_" + x + ".map"));
+        if (hugemazes == null) {
+            var list = new ArrayList<Maze>();
+            for (int x = 1; x <= 14; x++) {
+                list.add(MazeParser.loadMazeFromFile("width1huge_" + x + ".map"));
+            }
+            hugemazes = list;
         }
-        System.out.println("hugemapsloaded");
-        return list;
+        return hugemazes;
     }
 
 

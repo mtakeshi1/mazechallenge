@@ -58,8 +58,6 @@ public class Configuration {
      */
     public static final Supplier<? extends Challenge> challenge = ChallengeImpl::new;
 
-    static final List<Maze> huge1wmazes = MazeFactory.huge1wMazes();
-
     /**
      * These are the mazes that are ran ( chance for testing if you feel the need )
      */
@@ -81,7 +79,7 @@ public class Configuration {
             
             
             () -> MazeFactory.getScatterMap(HUGE, HUGE),
-            () -> MazeFactory.get1WMap(HUGE, HUGE),
+            () -> MazeFactory.huge1wMazes().get(0),
             () -> MazeFactory.getFlowingCave(HUGE, HUGE),
             () -> MazeFactory.getDungeon(HUGE, HUGE)
 
