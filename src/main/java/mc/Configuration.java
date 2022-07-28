@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import mc.challenge.Challenge;
 import mc.challenge.maze.Maze;
 import mc.challenge.maze.MazeFactory;
-import mc.renamebeforepr.ChallengeImpl;
+import mc.redempt.ChallengeImpl;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -32,10 +32,10 @@ public class Configuration {
 
 
     ///////// Graphical
-    public static final int FRAME_RATE = 15; // (max) FPS -> ALSO UPDATES PLAYER FASTER/SLOWER
+    public static final int FRAME_RATE = 60; // (max) FPS -> ALSO UPDATES PLAYER FASTER/SLOWER
     public static final int WINDOW_HEIGHT = 1200;
     public static final int WINDOW_WIDTH = 1200;
-    public static final int CELL_SIZE = 16; // size of a drawn square/cell
+    public static final int CELL_SIZE = 8; // size of a drawn square/cell
     public static final int OFFSET_X = 100; // draw screen from left offset
     public static final int OFFSET_Y = 100; // draw screen from bottom offset
 
@@ -62,8 +62,8 @@ public class Configuration {
      * These are the mazes that are ran ( chance for testing if you feel the need )
      */
     public static final List<Supplier<Maze>> MAZES = List.of(
-            () -> MazeFactory.getEmptyMap(SMALL, SMALL),
-            () -> MazeFactory.getEmptyMap(MEDIUM, MEDIUM),
+//            () -> MazeFactory.getEmptyMap(SMALL, SMALL),
+//            () -> MazeFactory.getEmptyMap(MEDIUM, MEDIUM),
             () -> MazeFactory.get1WMap(SMALL, SMALL),
             () -> MazeFactory.getDungeon(SMALL, SMALL),
 

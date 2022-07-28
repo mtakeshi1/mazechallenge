@@ -6,6 +6,7 @@ import mc.challenge.maze.Position;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.IntBinaryOperator;
 
 public class MazeMap {
@@ -23,32 +24,63 @@ public class MazeMap {
 		return pos;
 	}
 	
-	public void move(Direction dir) {
-		Position diff = dir.getTP();
-		pos = pos.plus(diff.row(), diff.col());
+	public Position getStartPosition() {
+		return tiles.keySet().stream().filter(t -> getType(t) == CellType.SRT).findFirst().orElse(null);
 	}
 	
-	public void add(int row, int col, CellType type) {
+	public Position getCenter() {
+		return combine(min, max, (a, b) -> (a + b) / 2);
+	}
+	
+	public boolean move(Direction dir) {
+		Position diff = dir.getTP();
+		Position newPos = pos.plus(diff.row(), diff.col());
+		if (getType(newPos) == CellType.WLL) {
+			System.out.println("Invalid move");
+			return false;
+		}
+		pos = newPos;
+		return true;
+	}
+	
+	public Position add(int row, int col, CellType type) {
 		Position pos = this.pos.plus(row, col);
+		if (tiles.containsKey(pos) && type == CellType.UNK) {
+			return pos;
+		}
 		tiles.put(pos, type);
 		min = combine(min, pos, Math::min);
 		max = combine(max, pos, Math::max);
+		return pos;
+	}
+	
+	public boolean isInBounds(Position pos, int boundShrink) {
+		return pos.row() >= min.row() + boundShrink && pos.row() <= max.row() - boundShrink
+				&& pos.col() >= min.col() + boundShrink && pos.col() <= max.col() - boundShrink;
+	}
+	
+	public void forEachTile(Consumer<Position> consumer) {
+		for (int col = min.col(); col < max.col(); col++) {
+			for (int row = min.row(); row < max.row(); row++) {
+				Position pos = new Position(row, col);
+				consumer.accept(pos);
+			}
+		}
 	}
 	
 	public void printMap() {
-		System.out.println();
-		System.out.println();
-		for (int row = min.row(); row < max.row(); row++) {
-			for (int col = min.col(); col < max.col(); col++) {
-				System.out.print(toChar(getType(new Position(row, col))));
+		for (int col = min.col(); col < max.col(); col++) {
+			for (int row = min.row(); row < max.row(); row++) {
+				Position pos = new Position(row, col);
+				if (pos.equals(this.pos)) {
+					System.out.print("+");
+					continue;
+				}
+				System.out.print(toChar(getType(pos)));
 			}
 			System.out.println();
 		}
-		try {
-			Thread.sleep(200);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
+		System.out.println("\n");
 	}
 	
 	public CellType getType(Position pos) {

@@ -1,13 +1,9 @@
 package mc.redempt;
 
-import mc.Configuration;
 import mc.challenge.Challenge;
 import mc.challenge.maze.Direction;
-import mc.challenge.maze.HeadlessMain;
 import mc.challenge.maze.Maze.CellType;
-import mc.challenge.maze.MazeFactory;
-
-import java.util.Arrays;
+import mc.challenge.maze.Position;
 
 /**
  * The whole challenge can be completed by just adding to this file.
@@ -21,71 +17,42 @@ import java.util.Arrays;
  */
 public class ChallengeImpl implements Challenge {
 
-    private int counter = 1;
-    private int counter2 = 1;
-    private int index = 0;
-    private final Direction[] dirs = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
-    // feel free to delete every field above and implement something usefull
-
-
-    /**
-     * This method will be called on init and after each move.
-     *
-     * @param los [13,13] array where 'you' always are at [6,6] ( further explained in printLOSUpdate
-     */
+    private MazeMap map = new MazeMap();
+    private TargetFinder targetFinder = new TargetFinder(map);
+    private Pathfinder pathfinder = new Pathfinder(map);
+    
     @Override
     public void handleLineOfSightUpdate(CellType[][] los) {
-//        printLOSUpdate(los); // Uncomment this for debug printing the array
+        for (int row = 0; row < los.length; row++) {
+            for (int col = 0; col < los[row].length; col++) {
+                CellType type = los[row][col];
+                Position pos = map.add(row - 6, col - 6, type);
+                targetFinder.add(pos);
+            }
+        }
     }
-
-    /**
-     * This method will be called before each move.
-     * Here you must supply the program with a 'Direction', an enum that can be: NORTH, SOUTH, EAST or WEST
-     * <p>
-     * 'You' will walk in that direction unless there is a wall there.
-     */
+    
+    private void recalcPath() {
+        if (targetFinder.hasExit()) {
+            pathfinder.setTarget(targetFinder.getNextTarget());
+        }
+        while (!pathfinder.hasPath()) {
+            Position goal = targetFinder.getNextTarget();
+            if (!pathfinder.setTarget(goal)) {
+                targetFinder.remove(goal);
+            }
+        }
+    }
+    
     @Override
     public Direction getMove() {
-
-        // this is just here so that the player will move a bit
-        if (counter2 == 0) {
-            index++;
-            index %= 4;
-            counter++;
-            counter2 = counter;
+        recalcPath();
+        Direction move = pathfinder.getNextMove();
+        while (!map.move(move)) {
+            recalcPath();
+            move = pathfinder.getNextMove();
         }
-        counter2--;
-        return dirs[index];
+        return move;
     }
-
-
-    //I put a convenience launcher here in case you want to run a single maze headless.
-    public static void main(String[] args) {
-        new HeadlessMain(new ChallengeImpl(),
-//                MazeFactory.getFlowingCave(
-//                MazeFactory.get1WMap(
-                MazeFactory.getDungeon(
-                        Configuration.SMALL, Configuration.SMALL
-//                        Configuration.MEDIUM, Configuration.MEDIUM
-//                        Configuration.LARGE, Configuration.LARGE
-//                        Configuration.HUGE, Configuration.HUGE
-                )
-        ).doAllMoves();
-    }
-
-
-    //Just here to show explain how the Line Of Sight array is build.
-    private static void printLOSUpdate(CellType[][] los) {
-        // [13,13] Line of sight array printed with 'you' in the middle at: [6,6]
-        // UNK = unknown
-        // WLL = wall
-        // FLR = floor
-        // SRT = start
-        // FSH = finish
-        System.out.println();
-        for (var v : los) {
-            System.out.println(Arrays.toString(v));
-        }
-        System.out.println();
-    }
+    
 }
