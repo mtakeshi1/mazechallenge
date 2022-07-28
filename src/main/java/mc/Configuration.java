@@ -73,7 +73,7 @@ public class Configuration {
             () -> MazeFactory.getDungeon(MEDIUM, MEDIUM),
             
             () -> MazeFactory.getScatterMap(LARGE, LARGE),
-            () -> MazeFactory.get1WMap(LARGE, LARGE),
+            () -> MazeFactory.getLarge1WidthMazes().get(0),
             () -> MazeFactory.getFlowingCave(LARGE, LARGE),
             () -> MazeFactory.getDungeon(LARGE, LARGE),
             
