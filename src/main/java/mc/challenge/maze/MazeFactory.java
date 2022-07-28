@@ -230,9 +230,11 @@ public class MazeFactory {
 
     public static void main(String[] args) throws IOException {
 
-        IntStream.range(5, 15).parallel().forEach(i -> {
+        IntStream.range(1, 15).parallel().forEach(i -> {
             try {
-                Files.write(Path.of("./data/maps/width1huge_" + i + ".map"), toList(hugemap()));
+//                Files.write(Path.of("./data/maps/dungeonhuge_" + i + ".map"), toList(hugemap()));
+//                Files.write(Path.of("./data/maps/dungeonhuge_" + i + ".map"), toList(hugedungeon()));
+                Files.write(Path.of("./data/maps/flowingCavehuge_" + i + ".map"), toList(hugeflowingCave()));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -251,6 +253,49 @@ public class MazeFactory {
         return generated;
     }
 
+    static char[][] hugedungeon() {
+        DungeonGenerator dg = new DungeonGenerator(HUGE, HUGE);
+        dg.addStairs();
+
+        char[][] generated = dg.generate();
+        return generated;
+    }
+
+    static char[][] hugeflowingCave() {
+        IDungeonGenerator gen = new FlowingCaveGenerator(HUGE, HUGE);
+        char[][] generated = gen.generate();
+
+
+        setStart(generated);
+        setEnd(generated);
+
+        if (rnd.nextBoolean()) {
+            invertrows(generated);
+        }
+        if (rnd.nextBoolean()) {
+            rotate(generated);
+        }
+        if (rnd.nextBoolean()) {
+            rotate(generated);
+        }
+        if (rnd.nextBoolean()) {
+            invertrows(generated);
+        }
+        if (rnd.nextBoolean()) {
+            invertrows(generated);
+        }
+        if (rnd.nextBoolean()) {
+            rotate(generated);
+        }
+        if (rnd.nextBoolean()) {
+            rotate(generated);
+        }
+        if (rnd.nextBoolean()) {
+            invertrows(generated);
+        }
+        return generated;
+    }
+
 
     static List<String> toList(char[][] arr) {
         List<String> lines = new ArrayList<>();
@@ -266,16 +311,41 @@ public class MazeFactory {
     }
 
 
-    private static List<Maze> hugemazes = null;
-    public static List<Maze> huge1wMazes() {
-        if (hugemazes == null) {
+    private static List<Maze> huge1WidthMazes = null;
+    public static List<Maze> getHuge1wMazes() {
+        if (huge1WidthMazes == null) {
             var list = new ArrayList<Maze>();
             for (int x = 1; x <= 14; x++) {
                 list.add(MazeParser.loadMazeFromFile("width1huge_" + x + ".map"));
             }
-            hugemazes = list;
+            huge1WidthMazes = list;
         }
-        return hugemazes;
+        return huge1WidthMazes;
+    }
+
+    private static List<Maze> hugeDungeons = null;
+    public static List<Maze> getHugeDungeons() {
+        if (hugeDungeons == null) {
+            var list = new ArrayList<Maze>();
+            for (int x = 1; x <= 14; x++) {
+                list.add(MazeParser.loadMazeFromFile("dungeonhuge_" + x + ".map"));
+            }
+            hugeDungeons = list;
+        }
+        return hugeDungeons;
+    }
+
+
+    private static List<Maze> hugeFlowingCaves = null;
+    public static List<Maze> getHugeFlowingCaves() {
+        if (hugeFlowingCaves == null) {
+            var list = new ArrayList<Maze>();
+            for (int x = 1; x <= 14; x++) {
+                list.add(MazeParser.loadMazeFromFile("flowingCavehuge_" + x + ".map"));
+            }
+            hugeFlowingCaves = list;
+        }
+        return hugeFlowingCaves;
     }
 
 

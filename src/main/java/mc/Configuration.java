@@ -79,9 +79,9 @@ public class Configuration {
             
             
             () -> MazeFactory.getScatterMap(HUGE, HUGE),
-            () -> MazeFactory.huge1wMazes().get(0),
-            () -> MazeFactory.getFlowingCave(HUGE, HUGE),
-            () -> MazeFactory.getDungeon(HUGE, HUGE)
+            () -> MazeFactory.getHuge1wMazes().get(0),
+            () -> MazeFactory.getHugeFlowingCaves().get(0),
+            () -> MazeFactory.getHugeDungeons().get(0)
 
     );
 

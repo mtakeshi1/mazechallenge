@@ -74,8 +74,6 @@ public class Maze {
         }
         if (player.getPosition() == null) throw new IllegalArgumentException("Must provide START '<'");
         if (finish == null) throw new IllegalArgumentException("Must provide FINISH '>'");
-        System.out.println("Startlocation : " + player.getPosition());
-        System.out.println("finishlocation : " + finish);
         getLineOfSight();
     }
 
