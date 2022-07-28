@@ -1,9 +1,9 @@
 package mc.challenge.maze;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.stream.Collectors;
+
+import static java.nio.file.Files.lines;
 
 public class MazeParser {
 
@@ -13,9 +13,9 @@ public class MazeParser {
     }
 
 
-    static char[][] fileToMatrix(String filename) {
-        try {
-            var lines = Files.lines(Path.of("./data/map.map")).collect(Collectors.toList());
+    private static char[][] fileToMatrix(String filename) {
+        try(var stream = lines(Path.of("./data/maps/" + filename))) {
+            var lines = stream.toList();
 
             char[][] grid = new char[lines.size()][lines.get(0).length()];
 
@@ -30,8 +30,6 @@ public class MazeParser {
         } catch (IOException e) {
             throw new RuntimeException("Could not load map");
         }
-
-
     }
 
 }

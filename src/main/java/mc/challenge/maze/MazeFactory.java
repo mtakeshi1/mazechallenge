@@ -8,8 +8,15 @@ import squidpony.squidgrid.mapping.FlowingCaveGenerator;
 import squidpony.squidgrid.mapping.IDungeonGenerator;
 import squidpony.squidmath.RNG;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.IntStream;
 
+import static mc.Configuration.HUGE;
 import static mc.challenge.maze.ArrayUtil.FOUR_DIRECTIONS;
 import static mc.challenge.maze.ArrayUtil.invertrows;
 import static mc.challenge.maze.ArrayUtil.rotate;
@@ -220,4 +227,53 @@ public class MazeFactory {
         }
         return new Maze(generated);
     }
+
+    public static void main(String[] args) throws IOException {
+
+        IntStream.range(5, 15).parallel().forEach(i -> {
+            try {
+                Files.write(Path.of("./data/maps/width1huge_" + i + ".map"), toList(hugemap()));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+
+    static char[][] hugemap() {
+        IDungeonGenerator gen = new ConnectingMapGenerator(HUGE, HUGE, 1, 1, new RNG(), 1, 0.5);
+        char[][] generated = gen.generate();
+
+
+        DungeonGenerator dg = new DungeonGenerator(20, 20);
+        dg.addStairs();
+        generated = dg.generate(generated);
+        return generated;
+    }
+
+
+    static List<String> toList(char[][] arr) {
+        List<String> lines = new ArrayList<>();
+
+        for (var a : arr) {
+            StringBuilder sb = new StringBuilder();
+            for (var c : a) {
+                sb.append(c);
+            }
+            lines.add(sb.toString());
+        }
+        return lines;
+    }
+
+
+    public static List<Maze> huge1wMazes() {
+        var list = new ArrayList<Maze>();
+        for (int x = 1; x <= 14; x++) {
+            list.add(MazeParser.loadMazeFromFile("width1huge_" + x + ".map"));
+        }
+        System.out.println("hugemapsloaded");
+        return list;
+    }
+
+
 }
