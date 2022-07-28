@@ -192,7 +192,7 @@ public class Maze {
                     }
                     explore(new Position(mr, mc));
                 } else if (view[r][c] == UNK) {
-                    view[r][c] = WLL;
+                    //view[r][c] = WLL;
                 }
             }
             v2.rotateDeg(1);
