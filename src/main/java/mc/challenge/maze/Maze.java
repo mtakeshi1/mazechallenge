@@ -139,6 +139,7 @@ public class Maze {
         var type = matrix[newPosition.row()][newPosition.col()];
 
         if (type == WLL) {
+            System.out.println("Warning: WALL HIT");
             return;
         }
 
@@ -198,7 +199,6 @@ public class Maze {
             v2.setLength(0.5f);
 
         }
-        invertrows(view);
         return view;
     }
 

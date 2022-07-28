@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import mc.challenge.Challenge;
 import mc.challenge.maze.Maze;
 import mc.challenge.maze.MazeFactory;
-import mc.renamebeforepr.ChallengeImpl;
+import mc.participants.deboder.DeboChallenge;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -28,7 +28,7 @@ public class Configuration {
     public static final int SMALL = 15;
     public static final int MEDIUM = 100;
     public static final int LARGE = 500;
-    public static final int HUGE = 1500;
+    public static final int HUGE = 1000;
 
 
     ///////// Graphical
@@ -64,7 +64,6 @@ public class Configuration {
     public static final List<Supplier<Maze>> MAZES = List.of(
             () -> MazeFactory.getEmptyMap(SMALL, SMALL),
             () -> MazeFactory.getEmptyMap(MEDIUM, MEDIUM),
-            () -> MazeFactory.getScatterMap(SMALL, SMALL),
             () -> MazeFactory.get1WMap(SMALL, SMALL),
             () -> MazeFactory.getDungeon(SMALL, SMALL),
 
