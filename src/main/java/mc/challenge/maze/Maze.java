@@ -314,6 +314,8 @@ public class Maze {
     }
 
     boolean setTile(Position position, CellType type) {
+        if (position.row() < 0 || position.row() >= matrix.length) return false;
+        if (position.col() < 0 || position.col() >= matrix[0].length) return false;
         if (matrix[position.row()][position.col()] == FLR) {
             matrix[position.row()][position.col()] = type;
             return true;
