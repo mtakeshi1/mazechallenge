@@ -257,20 +257,28 @@ public class Maze {
 
     public CellType[][] visitedMatrix() {
 
-        if (exploredBounds.north == -1) {
+        int en = exploredBounds.north;
+        int es = exploredBounds.south;
+        int ee = exploredBounds.east;
+        int ew = exploredBounds.west;
+
+        if (en == -1) {
             return new CellType[0][0];
         }
 
-        int rows = 1 + exploredBounds.north - exploredBounds.south;
-        int cols = 1 + exploredBounds.east - exploredBounds.west;
+
+        int rows = 1 + en - es;
+        int cols = 1 + ee - ew;
         CellType[][] mx = new CellType[rows][cols];
 
 
         int mr = 0;
         int mc;
-        for (int r = exploredBounds.south; r <= exploredBounds.north; r++) {
+
+        for (int r = es; r <= en; r++) {
             mc = 0;
-            for (int c = exploredBounds.west; c <= exploredBounds.east; c++) {
+            for (int c = ew; c <= ee; c++) {
+
                 if (explored[r][c]) {
                     mx[mr][mc] = matrix[r][c];
                 } else {

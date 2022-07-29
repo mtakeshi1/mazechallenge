@@ -51,6 +51,9 @@ public class GraphicalMain extends ApplicationAdapter {
     public void render() {
 
         if (graphicalHelper.finished() && mazecount < MAZES.size()) {
+            graphicalHelper.stop();
+
+
             mazecount++;
             if (mazecount < MAZES.size()) {
                 graphicalHelper = new GraphicalHelper(
