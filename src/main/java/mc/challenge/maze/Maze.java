@@ -127,7 +127,7 @@ public abstract class Maze {
         stepsTaken++;
         if (newPosition.equals(finish)) {
             endReached = true;
-            finishedInfo = new RunInfo(LocalDateTime.now(), getMazeType(), totalRows, totalCols, stepsTaken, -1, -1, start, finish, System.currentTimeMillis() - startTimeMS);
+            finishedInfo = new RunInfo(LocalDateTime.now(), getMazeType(), totalRows, totalCols, stepsTaken, getNrExploredTiles(explored), getNrWalkableTiles(matrix), start, finish, System.currentTimeMillis() - startTimeMS);
             try {
                 Files.writeString(Path.of("./data/runsv1"), finishedInfo.toString() + "\n", APPEND);
             } catch (IOException e) {
@@ -188,6 +188,25 @@ public abstract class Maze {
         return view;
     }
 
+    static int getNrWalkableTiles(CellType[][] mx) {
+        int count = 0;
+        for (var arr : mx) {
+            for (var c : arr) {
+                if (c != FLR) count++;
+            }
+        }
+        return count;
+    }
+
+    static int getNrExploredTiles(boolean[][] mx) {
+        int count = 0;
+        for (var arr : mx) {
+            for (var c : arr) {
+                if (c) count++;
+            }
+        }
+        return count;
+    }
 
     static class ExploredBounds {
         private int north = -1;
