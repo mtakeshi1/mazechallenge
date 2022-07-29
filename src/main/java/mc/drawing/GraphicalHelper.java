@@ -28,6 +28,8 @@ public class GraphicalHelper {
     private Sprite playerSprite;
     private final Challenge challenge;
 
+    private Thread thread;
+
     public GraphicalHelper(SpriteBatch batch, Maze maze) {
         this.batch = batch;
         this.challenge = Configuration.challenge.get();
@@ -38,6 +40,24 @@ public class GraphicalHelper {
         wp.setSize(CELL_SIZE, CELL_SIZE);
         challenge.handleLineOfSightUpdate(maze.getLineOfSight());
 
+
+        thread = new Thread(() -> {
+            long nextUpdate = System.currentTimeMillis() + Configuration.minimumDelayMS;
+            while (!maze.isEndReached() && !Thread.interrupted()) {
+                if (System.currentTimeMillis() > nextUpdate) {
+                    nextUpdate = System.currentTimeMillis() + Configuration.minimumDelayMS;
+
+                    maze.doMove(challenge.getMove());
+                    challenge.handleLineOfSightUpdate(maze.getLineOfSight());
+                }
+            }
+        });
+        thread.start();
+
+    }
+
+    public void stop() {
+        thread.interrupt();
     }
 
     /**
@@ -79,7 +99,31 @@ public class GraphicalHelper {
                 wp.setAlpha(1f);
             }
         }
+
+
     };
+
+    public static void main(String[] args) {
+        Runnable runnable = new Runnable() {
+            long nextUpdate = System.currentTimeMillis() + Configuration.minimumDelayMS;
+
+            @Override
+            public void run() {
+                while (true) {
+                    if (System.currentTimeMillis() > nextUpdate) {
+                        nextUpdate = System.currentTimeMillis() + Configuration.minimumDelayMS;
+                        System.out.println(System.currentTimeMillis());
+//                        maze.doMove(challenge.getMove());
+//                        challenge.handleLineOfSightUpdate(maze.getLineOfSight());
+                    }
+                }
+            }
+        };
+
+        Thread thread = new Thread(runnable);
+
+        thread.start();
+    }
 
     Consumer<Position> drawplayer = p -> {
         playerSprite.setPosition(

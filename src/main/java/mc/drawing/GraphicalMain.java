@@ -73,8 +73,6 @@ public class GraphicalMain extends ApplicationAdapter {
         }
 
         cam.update();
-        graphicalHelper.doMove();
-        graphicalHelper.update();
         batch.begin();
         graphicalHelper.draw();
         batch.end();
@@ -82,6 +80,7 @@ public class GraphicalMain extends ApplicationAdapter {
 
     @Override
     public void dispose() {
+        graphicalHelper.stop();
         batch.dispose();
     }
 

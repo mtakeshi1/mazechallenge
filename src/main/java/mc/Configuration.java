@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 /**
  * Here you can set some settings to your liking.
  * Especially:
- * FRAME_RATE -> if you want it to go slower/faster
+ * minimumDelayMS -> if you want it to go slower/faster
  * CELL_SIZE -> lower if you want more tiles on your screen
  * mazes -> change this if you like an other routine of mazes
  */
@@ -21,6 +21,13 @@ public class Configuration {
     private Configuration() {
         throw new RuntimeException("may not instantiate this class");
     }
+
+    /**
+     * The minimum wait time before a the next move is made.
+     * - 1000 = 1 second
+     * - 0 = no wait
+     */
+    public static long minimumDelayMS = 1;
 
     /**
      * Dimentions for generated mazes
@@ -32,7 +39,6 @@ public class Configuration {
 
 
     ///////// Graphical
-    public static final int FRAME_RATE = 15; // (max) FPS -> ALSO UPDATES PLAYER FASTER/SLOWER
     public static final int WINDOW_HEIGHT = 1200;
     public static final int WINDOW_WIDTH = 1200;
     public static final int CELL_SIZE = 16; // size of a drawn square/cell
