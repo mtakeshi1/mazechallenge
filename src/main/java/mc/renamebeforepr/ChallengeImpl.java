@@ -65,10 +65,10 @@ public class ChallengeImpl implements Challenge {
 //                MazeFactory.getFlowingCave(
 //                MazeFactory.get1WMap(
                 MazeFactory.getDungeon(
-                        Configuration.SMALL, Configuration.SMALL
-//                        Configuration.MEDIUM, Configuration.MEDIUM
-//                        Configuration.LARGE, Configuration.LARGE
-//                        Configuration.HUGE, Configuration.HUGE
+                        Configuration.SMALL
+//                        Configuration.MEDIUM
+//                        Configuration.LARGE
+//                        Configuration.HUGE
                 )
         ).doAllMoves();
     }

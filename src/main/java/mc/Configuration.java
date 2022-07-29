@@ -27,7 +27,7 @@ public class Configuration {
      * - 1000 = 1 second
      * - 0 = no wait
      */
-    public static long minimumDelayMS = 1000;
+    public static long minimumDelayMS = 300;
 
     /**
      * Dimentions for generated mazes
@@ -54,7 +54,7 @@ public class Configuration {
 
 
     ///////// CLI
-    public static final boolean PRINT_MAZE_CLI = true; // when a maze starts, print it ( just to help debugging )
+    public static boolean printMazeCli = true; // when a maze starts, print it ( just to help debugging )
 
 
     ///////// GAME
@@ -68,26 +68,26 @@ public class Configuration {
      * These are the mazes that are ran ( chance for testing if you feel the need )
      */
     public static final List<Supplier<Maze>> MAZES = List.of(
-            () -> MazeFactory.getEmptyMap(SMALL, SMALL),
-            () -> MazeFactory.getEmptyMap(MEDIUM, MEDIUM),
-            () -> MazeFactory.get1WMap(SMALL, SMALL),
-            () -> MazeFactory.getDungeon(SMALL, SMALL),
+            () -> MazeFactory.getEmptyMap(SMALL),
+            () -> MazeFactory.getEmptyMap(MEDIUM),
+            () -> MazeFactory.get1WMap(SMALL),
+            () -> MazeFactory.getDungeon(SMALL),
 
-            () -> MazeFactory.getScatterMap(MEDIUM, MEDIUM),
-            () -> MazeFactory.get1WMap(MEDIUM, MEDIUM),
-            () -> MazeFactory.getFlowingCave(MEDIUM, MEDIUM),
-            () -> MazeFactory.getDungeon(MEDIUM, MEDIUM),
-            
-            () -> MazeFactory.getScatterMap(LARGE, LARGE),
-            () -> MazeFactory.getLarge1WidthMazes().get(0),
-            () -> MazeFactory.getFlowingCave(LARGE, LARGE),
-            () -> MazeFactory.getDungeon(LARGE, LARGE),
-            
-            
-            () -> MazeFactory.getScatterMap(HUGE, HUGE),
-            () -> MazeFactory.getHuge1wMazes().get(0),
-            () -> MazeFactory.getHugeFlowingCaves().get(0),
-            () -> MazeFactory.getHugeDungeons().get(0)
+            () -> MazeFactory.getScatterMap(MEDIUM),
+            () -> MazeFactory.get1WMap(MEDIUM),
+            () -> MazeFactory.getFlowingCave(MEDIUM),
+            () -> MazeFactory.getDungeon(MEDIUM),
+
+            () -> MazeFactory.getScatterMap(LARGE),
+            () -> MazeFactory.getLarge1wMazeFromFile(1),
+            () -> MazeFactory.getFlowingCave(LARGE),
+            () -> MazeFactory.getDungeon(LARGE),
+
+
+            () -> MazeFactory.getScatterMap(HUGE),
+            () -> MazeFactory.getHuge1wMazeFromFile(1),
+            () -> MazeFactory.getHugeFlowingCaveMazeFromFile(1),
+            () -> MazeFactory.getHugeDungeonMazeFromFile(1)
 
     );
 

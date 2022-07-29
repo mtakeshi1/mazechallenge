@@ -58,8 +58,12 @@ public class ArrayUtil {
         return mx;
     }
 
-    public static boolean isInsideMatrix(int row, int col, Object[][] matrix) {
+    public static boolean isInsideOuterWallsMatrix(int row, int col, Object[][] matrix) {
         return row >= 0 && row < matrix.length && col >= 0 && col < matrix[0].length;
+    }
+
+    public static boolean isInsideOuterWallsMatrix(int row, int col, char[][] matrix) {
+        return row > 0 && row < matrix.length - 1 && col > 0 && col < matrix[0].length - 1;
     }
 
     public static final int[][] FOUR_DIRECTIONS = {
