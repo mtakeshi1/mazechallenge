@@ -35,6 +35,11 @@ public class EmptyMaze extends Maze {
         while (x-- > 0) {
             var m = new EmptyMaze(30);
         }
-
     }
+
+    @Override
+    public String getMazeType() {
+     return "EmptyMaze";
+    }
+
 }

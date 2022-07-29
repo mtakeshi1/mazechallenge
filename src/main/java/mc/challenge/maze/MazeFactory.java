@@ -61,9 +61,9 @@ public class MazeFactory {
         if (Configuration.printMazeCli) {
             System.out.println();
             System.out.println("---------------------------------------");
-            for (int r = map.rows - 1; r >= 0; r--) {
+            for (int r = map.totalRows - 1; r >= 0; r--) {
                 var sb = new StringBuilder();
-                for (int c = 0; c < map.cols; c++) {
+                for (int c = 0; c < map.totalCols; c++) {
                     switch (map.getTile(r, c)) {
                         case WLL -> sb.append('#');
                         case FLR -> sb.append('.');

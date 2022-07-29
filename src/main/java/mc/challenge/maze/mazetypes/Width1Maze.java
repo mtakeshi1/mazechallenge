@@ -27,4 +27,9 @@ public class Width1Maze extends Maze {
         generated = dg.generate(generated);
         return generated;
     }
+
+    @Override
+    public String getMazeType() {
+        return "Width1Maze";
+    }
 }

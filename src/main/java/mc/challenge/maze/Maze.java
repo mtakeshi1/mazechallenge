@@ -3,10 +3,17 @@ package mc.challenge.maze;
 import com.badlogic.gdx.math.Vector2;
 import mc.challenge.Challenge;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Random;
+import java.util.Optional;
 import java.util.function.Consumer;
 
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static mc.challenge.maze.ArrayUtil.invertrows;
 import static mc.challenge.maze.ArrayUtil.isInsideOuterWallsMatrix;
 import static mc.challenge.maze.ArrayUtil.rotate;
@@ -16,7 +23,7 @@ import static mc.challenge.maze.Maze.CellType.SRT;
 import static mc.challenge.maze.Maze.CellType.WLL;
 
 
-public class Maze {
+public abstract class Maze {
 
     /**
      * Mazes are made up of an array[][] of these types:
@@ -29,24 +36,31 @@ public class Maze {
         UNK // UNKNOWN
     }
 
+    public abstract String getMazeType();
+
     public int getStepsTaken() {
         return stepsTaken;
     }
 
-    int rows;
-    int cols;
+    final int totalRows;
+    final int totalCols;
 
     private final Player player;
     private final CellType[][] matrix;
     private final boolean[][] explored;
     private Position finish;
+    private Position start;
     private int stepsTaken = 0;
     private boolean endReached = false;
     private final ExploredBounds exploredBounds = new ExploredBounds();
 
-    public Maze(char[][] arr) {
-        rows = arr.length;
-        cols = arr[0].length;
+    private final long startTimeMS;
+
+    private RunInfo finishedInfo;
+
+    protected Maze(char[][] arr) {
+        totalRows = arr.length;
+        totalCols = arr[0].length;
         //        if (rows < 5) throw new IllegalArgumentException("rows must be >= 5");
 //        if (cols < 5) throw new IllegalArgumentException("cols must be >= 5");
 //        if (start == null) throw new IllegalArgumentException("start may not be null");
@@ -78,6 +92,7 @@ public class Maze {
                     case '<' -> {
                         matrix[r][c] = SRT;
                         player.setPosition(new Position(r, c));
+                        start = player.getPosition();
                     }
                     case '>' -> {
                         finish = new Position(r, c);
@@ -90,31 +105,39 @@ public class Maze {
         if (player.getPosition() == null) throw new IllegalArgumentException("Must provide START '<'");
         if (finish == null) throw new IllegalArgumentException("Must provide FINISH '>'");
         getLineOfSight();
+        startTimeMS = System.currentTimeMillis();
     }
 
     /**
      * Driving method for the challenge. When you implement {@link Challenge#getMove()} The returned value ends up here.
      */
-    public void doMove(Direction direction) {
+    public Optional<RunInfo> doMove(Direction direction) {
         if (direction == null) throw new IllegalArgumentException("The direction may not be null");
-        if (endReached) {
-            return;
+        if (finishedInfo != null) {
+            return of(finishedInfo);
         }
         Position newPosition = player.getPosition().plus(direction.getTP().row(), direction.getTP().col());
         var type = matrix[newPosition.row()][newPosition.col()];
 
         if (type == WLL) {
             System.out.println("Warning: WALL HIT");
-            return;
+            return empty();
         }
 
         stepsTaken++;
         if (newPosition.equals(finish)) {
-            System.out.println("FINISH ! Steps taken : " + stepsTaken);
             endReached = true;
+            finishedInfo = new RunInfo(LocalDateTime.now(), getMazeType(), totalRows, totalCols, stepsTaken, -1, -1, start, finish, System.currentTimeMillis() - startTimeMS);
+            try {
+                Files.writeString(Path.of("./data/runsv1"), finishedInfo.toString() + "\n", APPEND);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return of(finishedInfo);
         }
 
         player.setPosition(newPosition);
+        return empty();
     }
 
     /**
@@ -272,5 +295,9 @@ public class Maze {
     public CellType getTile(int r, int c) {
         return matrix[r][c];
     }
+
+//    private String getWinningMessage() {
+//
+//    }
 
 }

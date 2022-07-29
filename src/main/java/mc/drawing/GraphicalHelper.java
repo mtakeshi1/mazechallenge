@@ -47,7 +47,7 @@ public class GraphicalHelper {
                 if (System.currentTimeMillis() > nextUpdate) {
                     nextUpdate = System.currentTimeMillis() + Configuration.minimumDelayMS;
 
-                    maze.doMove(challenge.getMove());
+                    maze.doMove(challenge.getMove()).ifPresent(challenge::handleFinish);
                     challenge.handleLineOfSightUpdate(maze.getLineOfSight());
                 }
             }
@@ -108,28 +108,6 @@ public class GraphicalHelper {
 
 
     };
-
-    public static void main(String[] args) {
-        Runnable runnable = new Runnable() {
-            long nextUpdate = System.currentTimeMillis() + Configuration.minimumDelayMS;
-
-            @Override
-            public void run() {
-                while (true) {
-                    if (System.currentTimeMillis() > nextUpdate) {
-                        nextUpdate = System.currentTimeMillis() + Configuration.minimumDelayMS;
-                        System.out.println(System.currentTimeMillis());
-//                        maze.doMove(challenge.getMove());
-//                        challenge.handleLineOfSightUpdate(maze.getLineOfSight());
-                    }
-                }
-            }
-        };
-
-        Thread thread = new Thread(runnable);
-
-        thread.start();
-    }
 
     Consumer<Position> drawplayer = p -> {
         playerSprite.setPosition(

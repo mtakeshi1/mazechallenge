@@ -74,7 +74,8 @@ public class ScatterMaze extends Maze {
         return false;
     }
 
-    public static void main(String[] args) {
-        new ScatterMaze(50);
+    @Override
+    public String getMazeType() {
+        return "ScatterMaze";
     }
 }

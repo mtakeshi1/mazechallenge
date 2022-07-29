@@ -20,4 +20,9 @@ public class DungeonMaze extends Maze {
         char[][] generated = dg.generate();
         return generated;
     }
+
+    @Override
+    public String getMazeType() {
+        return "DungeonMaze";
+    }
 }

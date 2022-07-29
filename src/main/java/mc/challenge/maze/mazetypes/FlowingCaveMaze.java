@@ -102,4 +102,9 @@ public class FlowingCaveMaze extends Maze {
             }
         }
     }
+
+    @Override
+    public String getMazeType() {
+        return "FlowinCaveMaze";
+    }
 }
