@@ -20,7 +20,7 @@ import mc.challenge.maze.Position;
  * <p>
  * Configure and choose what type of mazes are ran : {@link mc.Configuration}
  */
-public class ChallengeImpl implements Challenge {
+public class EveryOSChallenge implements Challenge {
 	
 	private static final Position LOS_CENTER = new Position(6, 6);
 	
@@ -30,7 +30,7 @@ public class ChallengeImpl implements Challenge {
 	private Position playerPosition = new Position(0, 0);
 	private Position flagPosition;
 	
-	public ChallengeImpl() {
+	public EveryOSChallenge() {
 		mazeCache.setCell(playerPosition, createCell(CellType.SRT));
 		mazeSolver = new MazeSolver(mazeCache, playerPosition) {
 			@Override
@@ -127,7 +127,7 @@ public class ChallengeImpl implements Challenge {
 
 	//I put a convenience launcher here in case you want to run a single maze headless.
 	public static void main(String[] args) {
-		new HeadlessMain(new ChallengeImpl(),
+		new HeadlessMain(new EveryOSChallenge(),
 //				MazeFactory.getFlowingCave(
 //				MazeFactory.get1WMap(
 				MazeFactory.getDungeon(

@@ -4,7 +4,8 @@ import com.badlogic.gdx.graphics.Color;
 import mc.challenge.Challenge;
 import mc.challenge.maze.Maze;
 import mc.challenge.maze.MazeFactory;
-import mc.everyos.ChallengeImpl;
+import mc.everyos.EveryOSChallenge;
+import mc.renamebeforepr.ChallengeImpl;
 
 import java.util.List;
 import java.util.function.Supplier;

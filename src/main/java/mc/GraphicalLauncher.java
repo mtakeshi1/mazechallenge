@@ -3,6 +3,7 @@ package mc;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import mc.drawing.GraphicalMain;
+import mc.everyos.EveryOSChallenge;
 
 import static mc.Configuration.WINDOW_HEIGHT;
 import static mc.Configuration.WINDOW_WIDTH;
@@ -12,7 +13,7 @@ import static mc.Configuration.WINDOW_WIDTH;
  * <p>
  * Runs the mazes configured in {@link Configuration}
  * <p>
- * Write the code in : {@link mc.everyos.ChallengeImpl}
+ * Write the code in : {@link EveryOSChallenge}
  */
 public class GraphicalLauncher {
 
