@@ -27,4 +27,8 @@ public interface Challenge {
     default void handleFinish(RunInfo ri) {
         System.out.println(ri);
     }
+
+    default String getEntrant() {
+        return this.getClass().getSimpleName();
+    }
 }

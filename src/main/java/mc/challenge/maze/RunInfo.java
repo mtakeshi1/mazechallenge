@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
  * @param startPosition row/column of the start position
  * @param finishPosition row/column of the finish position
  * @param timeTakenMS the time it took to complete the maze in milliseconds
+ * @param challengeEntry The name/version for the challenge implementation
  */
 public record RunInfo(
         LocalDateTime currentDateTime,
@@ -24,6 +25,7 @@ public record RunInfo(
         int totalFloorTiles,
         Position startPosition,
         Position finishPosition,
-        long timeTakenMS
+        long timeTakenMS,
+        String challengeEntry
 ) {
 }

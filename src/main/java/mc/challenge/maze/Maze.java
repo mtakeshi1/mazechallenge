@@ -54,6 +54,8 @@ public abstract class Maze {
     private boolean endReached = false;
     private final ExploredBounds exploredBounds = new ExploredBounds();
 
+    private String entrant = null;
+
     private final long startTimeMS;
 
     private RunInfo finishedInfo;
@@ -127,9 +129,10 @@ public abstract class Maze {
         stepsTaken++;
         if (newPosition.equals(finish)) {
             endReached = true;
-            finishedInfo = new RunInfo(LocalDateTime.now(), getMazeType(), totalRows, totalCols, stepsTaken, getNrExploredTiles(explored), getNrWalkableTiles(matrix), start, finish, System.currentTimeMillis() - startTimeMS);
+            if (entrant == null) throw new RuntimeException("entrant may not be null");
+            finishedInfo = new RunInfo(LocalDateTime.now(), getMazeType(), totalRows, totalCols, stepsTaken, getNrExploredTiles(explored), getNrWalkableTiles(matrix), start, finish, System.currentTimeMillis() - startTimeMS, entrant);
             try {
-                Files.writeString(Path.of("./data/runsv1"), finishedInfo.toString() + "\n", APPEND);
+                Files.writeString(Path.of("./data/runsv1"), finishedInfo + "\n", APPEND);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -138,6 +141,10 @@ public abstract class Maze {
 
         player.setPosition(newPosition);
         return empty();
+    }
+
+    public void setEntrant(String entrant) {
+        this.entrant = entrant;
     }
 
     /**

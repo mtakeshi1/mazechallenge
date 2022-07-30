@@ -39,7 +39,7 @@ public class GraphicalHelper {
         playerSprite.setSize(CELL_SIZE, CELL_SIZE);
         wp.setSize(CELL_SIZE, CELL_SIZE);
         challenge.handleLineOfSightUpdate(maze.getLineOfSight());
-
+        maze.setEntrant(challenge.getEntrant());
 
         thread = new Thread(() -> {
             long nextUpdate = System.currentTimeMillis() + Configuration.minimumDelayMS;
