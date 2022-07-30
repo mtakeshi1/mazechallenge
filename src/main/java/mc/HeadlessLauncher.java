@@ -1,12 +1,12 @@
 package mc;
 
 import mc.challenge.maze.HeadlessMain;
-import mc.renamebeforepr.ChallengeImpl;
+import mc.everyos.ChallengeImpl;
 
 /**
  * Runs the mazes configured in {@link Configuration} headless
  *
- * Write the code in : {@link mc.renamebeforepr.ChallengeImpl}
+ * Write the code in : {@link mc.everyos.ChallengeImpl}
  */
 public class HeadlessLauncher {
 

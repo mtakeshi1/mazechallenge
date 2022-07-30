@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import mc.challenge.Challenge;
 import mc.challenge.maze.Maze;
 import mc.challenge.maze.MazeFactory;
-import mc.renamebeforepr.ChallengeImpl;
+import mc.everyos.ChallengeImpl;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -54,7 +54,7 @@ public class Configuration {
 
 
     ///////// CLI
-    public static boolean printMazeCli = true; // when a maze starts, print it ( just to help debugging )
+    public static boolean printMazeCli = false; // when a maze starts, print it ( just to help debugging )
 
 
     ///////// GAME
