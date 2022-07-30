@@ -1,6 +1,7 @@
 package mc.everyos;
 
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import mc.challenge.maze.Direction;
 import mc.challenge.maze.Maze.CellType;
@@ -11,7 +12,7 @@ public abstract class MazeSolver {
 	private static final Direction[] DIRECTIONS = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
 
 	private final MazeCache mazeCache;
-	private final Stack<Integer> trail = new Stack<>();
+	private final Deque<Integer> trail = new ArrayDeque<>();
 	
 	private Position playerPosition;
 
