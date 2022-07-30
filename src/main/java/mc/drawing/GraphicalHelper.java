@@ -109,6 +109,26 @@ public class GraphicalHelper {
 
     };
 
+    Consumer<boolean[][]> drawvisited = mx -> {
+
+        boolean[][] tmp = mx.clone();
+
+
+        for (int r = 0; r < tmp.length; r++) {
+            for (int c = 0; c < tmp[0].length; c++) {
+
+                if (tmp[r][c]) {
+                    wp.setPosition((float) OFFSET_X + c * CELL_SIZE, (float) OFFSET_Y + r * CELL_SIZE);
+                    wp.setColor(Configuration.VISITEDCOLOR);
+                    wp.draw(batch);
+                }
+
+            }
+        }
+
+
+    };
+
     Consumer<Position> drawplayer = p -> {
         playerSprite.setPosition(
                 (float) p.col() * CELL_SIZE + OFFSET_X,
@@ -119,6 +139,7 @@ public class GraphicalHelper {
 
     public void draw() {
         maze.drawMaze(drawmaze);
+        maze.drawVisited(drawvisited);
         maze.drawPlayer(drawplayer);
     }
 
@@ -130,15 +151,8 @@ public class GraphicalHelper {
         return playerSprite.getY();
     }
 
-    public void doMove() {
-        maze.doMove(challenge.getMove());
-    }
-
     public boolean finished() {
         return maze.isEndReached();
     }
 
-    public void update() {
-        challenge.handleLineOfSightUpdate(maze.getLineOfSight());
-    }
 }

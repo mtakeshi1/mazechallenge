@@ -48,6 +48,7 @@ public abstract class Maze {
     private final Player player;
     private final CellType[][] matrix;
     private final boolean[][] explored;
+    private final boolean[][] visited;
     private Position finish;
     private Position start;
     private int stepsTaken = 0;
@@ -86,6 +87,7 @@ public abstract class Maze {
         player = new Player(new Position(1, 1));
         matrix = new CellType[arr.length][arr[0].length];
         explored = new boolean[arr.length][arr[0].length];
+        visited = new boolean[arr.length][arr[0].length];
         for (int r = 0; r < arr.length; r++) {
             for (int c = 0; c < arr[0].length; c++) {
                 switch (arr[r][c]) {
@@ -140,6 +142,7 @@ public abstract class Maze {
         }
 
         player.setPosition(newPosition);
+        visited[player.getPosition().row()][player.getPosition().col()] = true;
         return empty();
     }
 
@@ -242,6 +245,40 @@ public abstract class Maze {
         explored[pos.row()][pos.col()] = true;
     }
 
+    public boolean[][] exploredvisitedMx() {
+        int en = exploredBounds.north;
+        int es = exploredBounds.south;
+        int ee = exploredBounds.east;
+        int ew = exploredBounds.west;
+
+        if (en == -1) {
+            return new boolean[0][0];
+        }
+
+
+        int rws = 1 + en - es;
+        int cls = 1 + ee - ew;
+        boolean[][] mx = new boolean[rws][cls];
+
+
+        int mr = 0;
+        int mc;
+
+        for (int r = es; r <= en; r++) {
+            mc = 0;
+            for (int c = ew; c <= ee; c++) {
+
+                if (visited[r][c]) {
+                    mx[mr][mc] = true;
+                }
+                mc++;
+            }
+            mr++;
+        }
+
+        return mx;
+    }
+
     public CellType[][] visitedMatrix() {
 
         int en = exploredBounds.north;
@@ -303,6 +340,11 @@ public abstract class Maze {
     public void drawPlayer(Consumer<Position> drawPlayer) {
         drawPlayer.accept(getPlayerRelativePosition());
     }
+
+    public void drawVisited(Consumer<boolean[][]> drawVis){
+        drawVis.accept(exploredvisitedMx());
+    }
+
 
     public boolean setTile(int r, int c, CellType type) {
         return setTile(new Position(r, c), type);

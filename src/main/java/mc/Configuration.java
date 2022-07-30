@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.Color;
 import mc.challenge.Challenge;
 import mc.challenge.maze.Maze;
 import mc.challenge.maze.MazeFactory;
-import mc.everyos.EveryOSChallenge;
 import mc.renamebeforepr.ChallengeImpl;
 
 import java.util.List;
@@ -28,7 +27,7 @@ public class Configuration {
      * - 1000 = 1 second
      * - 0 = no wait
      */
-    public static long minimumDelayMS = 300;
+    public static long minimumDelayMS = 200;
 
     /**
      * Dimentions for generated mazes
@@ -52,6 +51,7 @@ public class Configuration {
     public static final Color UNKNOWNCOLOR = Color.BLACK;
     public static final Color FLOORCOLOR = Color.SALMON;
     public static final Color BORDERCOLOR = Color.WHITE;
+    public static final Color VISITEDCOLOR = Color.YELLOW;
 
 
     ///////// CLI

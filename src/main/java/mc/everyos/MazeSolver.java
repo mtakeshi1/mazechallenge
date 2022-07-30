@@ -1,11 +1,11 @@
 package mc.everyos;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-
 import mc.challenge.maze.Direction;
 import mc.challenge.maze.Maze.CellType;
 import mc.challenge.maze.Position;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 public abstract class MazeSolver {
 	

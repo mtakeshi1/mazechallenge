@@ -1,14 +1,14 @@
 	package mc.everyos;
 
-import java.util.Arrays;
+    import mc.Configuration;
+    import mc.challenge.Challenge;
+    import mc.challenge.maze.Direction;
+    import mc.challenge.maze.HeadlessMain;
+    import mc.challenge.maze.Maze.CellType;
+    import mc.challenge.maze.MazeFactory;
+    import mc.challenge.maze.Position;
 
-import mc.Configuration;
-import mc.challenge.Challenge;
-import mc.challenge.maze.Direction;
-import mc.challenge.maze.HeadlessMain;
-import mc.challenge.maze.Maze.CellType;
-import mc.challenge.maze.MazeFactory;
-import mc.challenge.maze.Position;
+    import java.util.Arrays;
 
 /**
  * The whole challenge can be completed by just adding to this file.
