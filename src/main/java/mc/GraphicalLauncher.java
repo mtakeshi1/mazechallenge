@@ -12,7 +12,7 @@ import static mc.Configuration.WINDOW_WIDTH;
  * <p>
  * Runs the mazes configured in {@link Configuration}
  * <p>
- * Write the code in : {@link mc.renamebeforepr.ChallengeImpl}
+ * Write the code in : {@link mc.everyos.ChallengeImpl}
  */
 public class GraphicalLauncher {
 
