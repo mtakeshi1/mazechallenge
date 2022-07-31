@@ -3,24 +3,27 @@ package mc.challenge.maze;
 import com.badlogic.gdx.math.Vector2;
 import mc.challenge.Challenge;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Random;
+import java.util.Optional;
 import java.util.function.Consumer;
 
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static mc.challenge.maze.ArrayUtil.invertrows;
-import static mc.challenge.maze.ArrayUtil.isInsideMatrix;
+import static mc.challenge.maze.ArrayUtil.isInsideOuterWallsMatrix;
 import static mc.challenge.maze.ArrayUtil.rotate;
 import static mc.challenge.maze.Maze.CellType.FLR;
 import static mc.challenge.maze.Maze.CellType.FSH;
 import static mc.challenge.maze.Maze.CellType.SRT;
-import static mc.challenge.maze.Maze.CellType.UNK;
 import static mc.challenge.maze.Maze.CellType.WLL;
 
-/**
- * This class can create a maze but is also responsible for updating it.
- * ( needs to be refactored tbh, but you should not need or touch this class )
- */
-public class Maze {
+
+public abstract class Maze {
 
     /**
      * Mazes are made up of an array[][] of these types:
@@ -33,21 +36,50 @@ public class Maze {
         UNK // UNKNOWN
     }
 
-    private static final Random rnd = new Random();
+    public abstract String getMazeType();
 
     public int getStepsTaken() {
         return stepsTaken;
     }
 
+    final int totalRows;
+    final int totalCols;
+
     private final Player player;
     private final CellType[][] matrix;
     private final boolean[][] explored;
+    private final boolean[][] visited;
     private Position finish;
+    private Position start;
     private int stepsTaken = 0;
     private boolean endReached = false;
     private final ExploredBounds exploredBounds = new ExploredBounds();
 
-    public Maze(char[][] arr) {
+    private String entrant = null;
+
+    private final long startTimeMS;
+
+    private RunInfo finishedInfo;
+
+    protected Maze(char[][] arr) {
+        totalRows = arr.length;
+        totalCols = arr[0].length;
+        //        if (rows < 5) throw new IllegalArgumentException("rows must be >= 5");
+//        if (cols < 5) throw new IllegalArgumentException("cols must be >= 5");
+//        if (start == null) throw new IllegalArgumentException("start may not be null");
+//        if (start.row() < 1) throw new IllegalArgumentException("start row must be > 0");
+//        if (start.row() >= rows) throw new IllegalArgumentException("start row must be < rows");
+//        if (start.col() < 1) throw new IllegalArgumentException("start col must be > 0");
+//        if (start.col() >= rows) throw new IllegalArgumentException("start col must be < rows");
+//
+//        if (finish == null) throw new IllegalArgumentException("finish may not be null");
+//        if (finish.row() < 1) throw new IllegalArgumentException("finish row must be > 0");
+//        if (finish.row() >= rows) throw new IllegalArgumentException("finish row must be < rows");
+//        if (finish.col() < 1) throw new IllegalArgumentException("finish col must be > 0");
+//        if (finish.col() >= rows) throw new IllegalArgumentException("finish col must be < rows");
+//        if (start.equals(finish)) throw new IllegalArgumentException("start must not be finish");
+
+
         arr = rotate(arr);
         arr = rotate(arr);
         arr = rotate(arr);
@@ -55,6 +87,7 @@ public class Maze {
         player = new Player(new Position(1, 1));
         matrix = new CellType[arr.length][arr[0].length];
         explored = new boolean[arr.length][arr[0].length];
+        visited = new boolean[arr.length][arr[0].length];
         for (int r = 0; r < arr.length; r++) {
             for (int c = 0; c < arr[0].length; c++) {
                 switch (arr[r][c]) {
@@ -63,6 +96,7 @@ public class Maze {
                     case '<' -> {
                         matrix[r][c] = SRT;
                         player.setPosition(new Position(r, c));
+                        start = player.getPosition();
                     }
                     case '>' -> {
                         finish = new Position(r, c);
@@ -75,85 +109,57 @@ public class Maze {
         if (player.getPosition() == null) throw new IllegalArgumentException("Must provide START '<'");
         if (finish == null) throw new IllegalArgumentException("Must provide FINISH '>'");
         getLineOfSight();
-    }
-
-    /**
-     * @deprecated working on builder/factory
-     */
-    @Deprecated(forRemoval = true)
-    public Maze(int rows, int cols) {
-        this(
-                rows,
-                cols,
-                new Position(rnd.nextInt((rows / 2) - 2) + 1, rnd.nextInt((cols / 2) - 2) + 1),
-                new Position(rnd.nextInt((rows / 2) - 2) + rows / 2, rnd.nextInt((cols / 2) - 2) + cols / 2)
-        );
-    }
-
-    /**
-     * @deprecated Clean this up and delegate to mazebuilder/factory
-     */
-    @Deprecated(forRemoval = true)
-    public Maze(int rows, int cols, Position start, Position finish) {
-        if (rows < 5) throw new IllegalArgumentException("rows must be >= 5");
-        if (cols < 5) throw new IllegalArgumentException("cols must be >= 5");
-        if (start == null) throw new IllegalArgumentException("start may not be null");
-        if (start.row() < 1) throw new IllegalArgumentException("start row must be > 0");
-        if (start.row() >= rows) throw new IllegalArgumentException("start row must be < rows");
-        if (start.col() < 1) throw new IllegalArgumentException("start col must be > 0");
-        if (start.col() >= rows) throw new IllegalArgumentException("start col must be < rows");
-
-        if (finish == null) throw new IllegalArgumentException("finish may not be null");
-        if (finish.row() < 1) throw new IllegalArgumentException("finish row must be > 0");
-        if (finish.row() >= rows) throw new IllegalArgumentException("finish row must be < rows");
-        if (finish.col() < 1) throw new IllegalArgumentException("finish col must be > 0");
-        if (finish.col() >= rows) throw new IllegalArgumentException("finish col must be < rows");
-        if (start.equals(finish)) throw new IllegalArgumentException("start must not be finish");
-
-        this.finish = finish;
-
-        matrix = new CellType[rows][cols];
-        explored = new boolean[rows][cols];
-
-        fillMatrixWithFloor();
-        wallEdges();
-        matrix[start.row()][start.col()] = CellType.SRT;
-        matrix[finish.row()][finish.col()] = CellType.FSH;
-
-
-        player = new Player(start);
-        getLineOfSight();
+        startTimeMS = System.currentTimeMillis();
     }
 
     /**
      * Driving method for the challenge. When you implement {@link Challenge#getMove()} The returned value ends up here.
      */
-    public void doMove(Direction direction) {
+    public Optional<RunInfo> doMove(Direction direction) {
         if (direction == null) throw new IllegalArgumentException("The direction may not be null");
-        if (endReached) {
-            return;
+        if (finishedInfo != null) {
+            return of(finishedInfo);
         }
         Position newPosition = player.getPosition().plus(direction.getTP().row(), direction.getTP().col());
         var type = matrix[newPosition.row()][newPosition.col()];
 
         if (type == WLL) {
             System.out.println("Warning: WALL HIT");
-            return;
+            return empty();
         }
 
         stepsTaken++;
         if (newPosition.equals(finish)) {
-            System.out.println("FINISH ! Steps taken : " + stepsTaken);
             endReached = true;
+            if (entrant == null) throw new RuntimeException("entrant may not be null");
+            finishedInfo = new RunInfo(LocalDateTime.now(), getMazeType(), totalRows, totalCols, stepsTaken, getNrExploredTiles(explored), getNrWalkableTiles(matrix), start, finish, System.currentTimeMillis() - startTimeMS, entrant);
+            try {
+                Files.writeString(Path.of("./data/runsv1"), finishedInfo + "\n", APPEND);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return of(finishedInfo);
         }
 
         player.setPosition(newPosition);
+        visited[player.getPosition().row()][player.getPosition().col()] = true;
+        return empty();
+    }
+
+
+    public RunInfo getFinishedInfo() {
+        return finishedInfo;
+    }
+
+    public void setEntrant(String entrant) {
+        this.entrant = entrant;
     }
 
     /**
      * Should be extended to support: angle selections, distances
      */
     public CellType[][] getLineOfSight() {
+        var start = player.getPosition();
 
         var view = new CellType[13][13];
 
@@ -161,7 +167,6 @@ public class Maze {
             Arrays.fill(arr, CellType.UNK);
         }
 
-        var start = player.getPosition();
 
         Vector2 v2 = new Vector2(0.5f, 0);
         for (int j = 0; j < 360; j++) {
@@ -172,7 +177,7 @@ public class Maze {
                 int c = (int) v2.x;
                 int mr = r + start.row();
                 int mc = c + start.col();
-                if (!isInsideMatrix(mr, mc, matrix)) {
+                if (!isInsideOuterWallsMatrix(mr, mc, matrix)) {
                     continue;
                 }
 
@@ -189,8 +194,6 @@ public class Maze {
 
                     }
                     explore(new Position(mr, mc));
-                } else if (view[r][c] == UNK) {
-                    //view[r][c] = WLL;
                 }
             }
             v2.rotateDeg(1);
@@ -200,32 +203,24 @@ public class Maze {
         return view;
     }
 
-
-    /**
-     * @deprecated Does not belong here.
-     */
-    @Deprecated(forRemoval = true)
-    private void fillMatrixWithFloor() {
-        for (int r = 0; r < matrix.length; r++) {
-            for (int c = 0; c < matrix[0].length; c++) {
-                matrix[r][c] = FLR;
+    static int getNrWalkableTiles(CellType[][] mx) {
+        int count = 0;
+        for (var arr : mx) {
+            for (var c : arr) {
+                if (c != FLR) count++;
             }
         }
+        return count;
     }
 
-    /**
-     * @deprecated Does not belong here.
-     */
-    @Deprecated(forRemoval = true)
-    private void wallEdges() {
-        for (int r = 0; r < matrix.length; r++) {
-            matrix[r][0] = WLL;
-            matrix[r][matrix[0].length - 1] = WLL;
+    static int getNrExploredTiles(boolean[][] mx) {
+        int count = 0;
+        for (var arr : mx) {
+            for (var c : arr) {
+                if (c) count++;
+            }
         }
-        for (int c = 0; c < matrix[0].length; c++) {
-            matrix[0][c] = WLL;
-            matrix[matrix.length - 1][c] = WLL;
-        }
+        return count;
     }
 
     static class ExploredBounds {
@@ -255,22 +250,64 @@ public class Maze {
         explored[pos.row()][pos.col()] = true;
     }
 
-    public CellType[][] visitedMatrix() {
+    public boolean[][] exploredvisitedMx() {
+        int en = exploredBounds.north;
+        int es = exploredBounds.south;
+        int ee = exploredBounds.east;
+        int ew = exploredBounds.west;
 
-        if (exploredBounds.north == -1) {
-            return new CellType[0][0];
+        if (en == -1) {
+            return new boolean[0][0];
         }
 
-        int rows = 1 + exploredBounds.north - exploredBounds.south;
-        int cols = 1 + exploredBounds.east - exploredBounds.west;
-        CellType[][] mx = new CellType[rows][cols];
+
+        int rws = 1 + en - es;
+        int cls = 1 + ee - ew;
+        boolean[][] mx = new boolean[rws][cls];
 
 
         int mr = 0;
         int mc;
-        for (int r = exploredBounds.south; r <= exploredBounds.north; r++) {
+
+        for (int r = es; r <= en; r++) {
             mc = 0;
-            for (int c = exploredBounds.west; c <= exploredBounds.east; c++) {
+            for (int c = ew; c <= ee; c++) {
+
+                if (visited[r][c]) {
+                    mx[mr][mc] = true;
+                }
+                mc++;
+            }
+            mr++;
+        }
+
+        return mx;
+    }
+
+    public CellType[][] visitedMatrix() {
+
+        int en = exploredBounds.north;
+        int es = exploredBounds.south;
+        int ee = exploredBounds.east;
+        int ew = exploredBounds.west;
+
+        if (en == -1) {
+            return new CellType[0][0];
+        }
+
+
+        int rws = 1 + en - es;
+        int cls = 1 + ee - ew;
+        CellType[][] mx = new CellType[rws][cls];
+
+
+        int mr = 0;
+        int mc;
+
+        for (int r = es; r <= en; r++) {
+            mc = 0;
+            for (int c = ew; c <= ee; c++) {
+
                 if (explored[r][c]) {
                     mx[mr][mc] = matrix[r][c];
                 } else {
@@ -288,7 +325,7 @@ public class Maze {
     /**
      * gets player position relative to the explored map.
      */
-    public Position getPlayerPosition() {
+    public Position getPlayerRelativePosition() {
         return new Position(
                 player.getPosition().row() - exploredBounds.south,
                 player.getPosition().col() - exploredBounds.west
@@ -306,14 +343,19 @@ public class Maze {
     }
 
     public void drawPlayer(Consumer<Position> drawPlayer) {
-        drawPlayer.accept(getPlayerPosition());
+        drawPlayer.accept(getPlayerRelativePosition());
     }
 
-    boolean setTile(int r, int c, CellType type) {
+    public void drawVisited(Consumer<boolean[][]> drawVis){
+        drawVis.accept(exploredvisitedMx());
+    }
+
+
+    public boolean setTile(int r, int c, CellType type) {
         return setTile(new Position(r, c), type);
     }
 
-    boolean setTile(Position position, CellType type) {
+    public boolean setTile(Position position, CellType type) {
         if (position.row() < 0 || position.row() >= matrix.length) return false;
         if (position.col() < 0 || position.col() >= matrix[0].length) return false;
         if (matrix[position.row()][position.col()] == FLR) {
@@ -323,7 +365,7 @@ public class Maze {
         return false;
     }
 
-    CellType getTile(int r, int c) {
+    public CellType getTile(int r, int c) {
         return matrix[r][c];
     }
 

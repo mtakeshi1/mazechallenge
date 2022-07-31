@@ -3,17 +3,17 @@ package mc;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import mc.drawing.GraphicalMain;
+import mc.everyos.EveryOSChallenge;
 
-import static mc.Configuration.FRAME_RATE;
 import static mc.Configuration.WINDOW_HEIGHT;
 import static mc.Configuration.WINDOW_WIDTH;
 
 /**
  * Just here to start a display for debugging purposes
- *
+ * <p>
  * Runs the mazes configured in {@link Configuration}
- *
- * Write the code in : {@link mc.renamebeforepr.ChallengeImpl}
+ * <p>
+ * Write the code in : {@link EveryOSChallenge}
  */
 public class GraphicalLauncher {
 
@@ -24,7 +24,7 @@ public class GraphicalLauncher {
     public static void main(String[] arg) {
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         config.setTitle("MazeRunner");
-        config.setForegroundFPS(FRAME_RATE);
+        config.setForegroundFPS(100);
         config.setWindowedMode(WINDOW_WIDTH, WINDOW_HEIGHT);
         new Lwjgl3Application(new GraphicalMain(), config);
     }

@@ -7,14 +7,12 @@ import static java.nio.file.Files.lines;
 
 public class MazeParser {
 
-
-    public static Maze loadMazeFromFile(String filename) {
-        return new Maze(fileToMatrix(filename));
+    private MazeParser() {
+        throw new RuntimeException("may not instantiate this class");
     }
 
-
-    private static char[][] fileToMatrix(String filename) {
-        try(var stream = lines(Path.of("./data/maps/" + filename))) {
+    public static char[][] fileToMatrix(String filename) {
+        try (var stream = lines(Path.of("./data/maps/" + filename))) {
             var lines = stream.toList();
 
             char[][] grid = new char[lines.size()][lines.get(0).length()];

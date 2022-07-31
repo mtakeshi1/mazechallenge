@@ -17,7 +17,7 @@ import java.util.Arrays;
  * Graphically -> {@link mc.GraphicalLauncher} ( for debug purposes )
  * Non graphically ->  {@link mc.HeadlessLauncher}
  * <p>
- * Configure and choose what type of mazes are ran : {@link mc.Configuration}
+ * Configure and choose what type of mazes are ran : {@link Configuration}
  */
 public class ChallengeImpl implements Challenge {
 
@@ -65,10 +65,10 @@ public class ChallengeImpl implements Challenge {
 //                MazeFactory.getFlowingCave(
 //                MazeFactory.get1WMap(
                 MazeFactory.getDungeon(
-                        Configuration.SMALL, Configuration.SMALL
-//                        Configuration.MEDIUM, Configuration.MEDIUM
-//                        Configuration.LARGE, Configuration.LARGE
-//                        Configuration.HUGE, Configuration.HUGE
+                        Configuration.SMALL
+//                        Configuration.MEDIUM
+//                        Configuration.LARGE
+//                        Configuration.HUGE
                 )
         ).doAllMoves();
     }

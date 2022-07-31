@@ -9,6 +9,7 @@ import mc.challenge.Challenge;
 import mc.challenge.maze.Maze;
 import mc.challenge.maze.Maze.CellType;
 import mc.challenge.maze.Position;
+import mc.challenge.maze.RunInfo;
 
 import java.util.function.Consumer;
 
@@ -28,6 +29,8 @@ public class GraphicalHelper {
     private Sprite playerSprite;
     private final Challenge challenge;
 
+    private Thread thread;
+
     public GraphicalHelper(SpriteBatch batch, Maze maze) {
         this.batch = batch;
         this.challenge = Configuration.challenge.get();
@@ -37,7 +40,30 @@ public class GraphicalHelper {
         playerSprite.setSize(CELL_SIZE, CELL_SIZE);
         wp.setSize(CELL_SIZE, CELL_SIZE);
         challenge.handleLineOfSightUpdate(maze.getLineOfSight());
+        maze.setEntrant(challenge.getEntrant());
 
+        thread = new Thread(() -> {
+            long nextUpdate = System.currentTimeMillis() + Configuration.minimumDelayMS;
+            while (!maze.isEndReached() && !Thread.interrupted()) {
+                if (System.currentTimeMillis() > nextUpdate) {
+                    nextUpdate = System.currentTimeMillis() + Configuration.minimumDelayMS;
+
+                    maze.doMove(challenge.getMove()).ifPresent(challenge::handleFinish);
+                    challenge.handleLineOfSightUpdate(maze.getLineOfSight());
+                }
+            }
+        });
+        thread.start();
+
+    }
+
+    public void stop() {
+        thread.interrupt();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -47,25 +73,26 @@ public class GraphicalHelper {
      */
     Consumer<CellType[][]> drawmaze = mx -> {
 
+        CellType[][] tmp = mx.clone();
 
         wp.setColor(Configuration.BORDERCOLOR);
-        for (int r = 0; r < mx.length + 2; r++) {
+        for (int r = 0; r < tmp.length + 2; r++) {
             wp.setPosition((float) OFFSET_X - CELL_SIZE, (float) OFFSET_Y - CELL_SIZE + r * CELL_SIZE);
             wp.draw(batch);
-            wp.setPosition((float) OFFSET_X + CELL_SIZE * mx[0].length, (float) OFFSET_Y - CELL_SIZE + r * CELL_SIZE);
+            wp.setPosition((float) OFFSET_X + CELL_SIZE * tmp[0].length, (float) OFFSET_Y - CELL_SIZE + r * CELL_SIZE);
             wp.draw(batch);
         }
-        for (int c = 0; c < mx[0].length + 2; c++) {
+        for (int c = 0; c < tmp[0].length + 2; c++) {
             wp.setPosition((float) OFFSET_Y - CELL_SIZE + c * CELL_SIZE, (float) OFFSET_X - CELL_SIZE);
             wp.draw(batch);
-            wp.setPosition((float) OFFSET_Y - CELL_SIZE + c * CELL_SIZE, (float) OFFSET_X + CELL_SIZE * mx.length);
+            wp.setPosition((float) OFFSET_Y - CELL_SIZE + c * CELL_SIZE, (float) OFFSET_X + CELL_SIZE * tmp.length);
             wp.draw(batch);
         }
 
-        for (int r = 0; r < mx.length; r++) {
-            for (int c = 0; c < mx[0].length; c++) {
+        for (int r = 0; r < tmp.length; r++) {
+            for (int c = 0; c < tmp[0].length; c++) {
                 wp.setPosition((float) OFFSET_X + c * CELL_SIZE, (float) OFFSET_Y + r * CELL_SIZE);
-                switch (mx[r][c]) {
+                switch (tmp[r][c]) {
                     case WLL -> wp.setColor(Configuration.WALLCOLOR);
                     case FLR -> wp.setColor(Configuration.FLOORCOLOR);
                     case SRT -> wp.setColor(Configuration.STARTCOLOR);
@@ -79,6 +106,28 @@ public class GraphicalHelper {
                 wp.setAlpha(1f);
             }
         }
+
+
+    };
+
+    Consumer<boolean[][]> drawvisited = mx -> {
+
+        boolean[][] tmp = mx.clone();
+
+
+        for (int r = 0; r < tmp.length; r++) {
+            for (int c = 0; c < tmp[0].length; c++) {
+
+                if (tmp[r][c]) {
+                    wp.setPosition((float) OFFSET_X + c * CELL_SIZE, (float) OFFSET_Y + r * CELL_SIZE);
+                    wp.setColor(Configuration.VISITEDCOLOR);
+                    wp.draw(batch);
+                }
+
+            }
+        }
+
+
     };
 
     Consumer<Position> drawplayer = p -> {
@@ -91,6 +140,7 @@ public class GraphicalHelper {
 
     public void draw() {
         maze.drawMaze(drawmaze);
+        maze.drawVisited(drawvisited);
         maze.drawPlayer(drawplayer);
     }
 
@@ -102,15 +152,11 @@ public class GraphicalHelper {
         return playerSprite.getY();
     }
 
-    public void doMove() {
-        maze.doMove(challenge.getMove());
-    }
-
     public boolean finished() {
         return maze.isEndReached();
     }
 
-    public void update() {
-        challenge.handleLineOfSightUpdate(maze.getLineOfSight());
+    public RunInfo getFinishInfo() {
+        return maze.getFinishedInfo();
     }
 }
