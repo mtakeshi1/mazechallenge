@@ -15,7 +15,7 @@ import mc.challenge.maze.Position;
  * <p>
  * Configure and choose what type of mazes are ran : {@link mc.Configuration}
  */
-public class ChallengeImpl implements Challenge {
+public class RedemptChallenge implements Challenge {
 
     private MazeMap map = new MazeMap();
     private TargetFinder targetFinder = new TargetFinder(map);
