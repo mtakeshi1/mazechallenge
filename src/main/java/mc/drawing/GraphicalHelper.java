@@ -9,6 +9,7 @@ import mc.challenge.Challenge;
 import mc.challenge.maze.Maze;
 import mc.challenge.maze.Maze.CellType;
 import mc.challenge.maze.Position;
+import mc.challenge.maze.RunInfo;
 
 import java.util.function.Consumer;
 
@@ -155,4 +156,7 @@ public class GraphicalHelper {
         return maze.isEndReached();
     }
 
+    public RunInfo getFinishInfo() {
+        return maze.getFinishedInfo();
+    }
 }

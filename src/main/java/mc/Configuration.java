@@ -39,11 +39,11 @@ public class Configuration {
 
 
     ///////// Graphical
-    public static final int WINDOW_HEIGHT = 1200;
-    public static final int WINDOW_WIDTH = 2000;
+    public static final int WINDOW_HEIGHT = 1400;
+    public static final int WINDOW_WIDTH = 1400;
     public static final int CELL_SIZE = 16; // size of a drawn square/cell
-    public static final int OFFSET_X = 100; // draw screen from left offset
-    public static final int OFFSET_Y = 100; // draw screen from bottom offset
+    public static final int OFFSET_X = 200; // draw screen from left offset
+    public static final int OFFSET_Y = 200; // draw screen from bottom offset
 
     public static final Color WALLCOLOR = Color.BROWN;
     public static final Color STARTCOLOR = Color.RED;

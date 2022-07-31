@@ -146,6 +146,11 @@ public abstract class Maze {
         return empty();
     }
 
+
+    public RunInfo getFinishedInfo() {
+        return finishedInfo;
+    }
+
     public void setEntrant(String entrant) {
         this.entrant = entrant;
     }
@@ -154,6 +159,7 @@ public abstract class Maze {
      * Should be extended to support: angle selections, distances
      */
     public CellType[][] getLineOfSight() {
+        var start = player.getPosition();
 
         var view = new CellType[13][13];
 
@@ -161,7 +167,6 @@ public abstract class Maze {
             Arrays.fill(arr, CellType.UNK);
         }
 
-        var start = player.getPosition();
 
         Vector2 v2 = new Vector2(0.5f, 0);
         for (int j = 0; j < 360; j++) {
@@ -363,9 +368,5 @@ public abstract class Maze {
     public CellType getTile(int r, int c) {
         return matrix[r][c];
     }
-
-//    private String getWinningMessage() {
-//
-//    }
 
 }
