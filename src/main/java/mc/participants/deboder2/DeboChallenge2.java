@@ -2,7 +2,6 @@ package mc.participants.deboder2;
 
 import mc.Configuration;
 import mc.challenge.Challenge;
-import mc.challenge.maze.ArrayUtil;
 import mc.challenge.maze.Direction;
 import mc.challenge.maze.HeadlessMain;
 import mc.challenge.maze.Maze.CellType;

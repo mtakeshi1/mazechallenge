@@ -28,10 +28,9 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.ScreenUtils;
 import mc.Configuration;
+import mc.challenge.maze.RunInfo;
 
-import java.awt.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.time.format.DateTimeFormatter;
 
 import static mc.Configuration.MAZES;
 import static mc.Configuration.WINDOW_HEIGHT;
@@ -168,8 +167,14 @@ public class GraphicalMain extends ApplicationAdapter {
 //            }
 
 
-            FileHandle fh = new FileHandle(Gdx.files.getLocalStoragePath() + "data/latest.png");
-            PixmapIO.writePNG(fh, pixmap);
+            FileHandle fh1 = new FileHandle(Gdx.files.getLocalStoragePath() + "data/latest.png");
+            PixmapIO.writePNG(fh1, pixmap);
+
+            if (Configuration.screenshotOnClose) {
+                FileHandle fh2 = new FileHandle(Gdx.files.getLocalStoragePath() + "data/screenshots/" + getFileName(info));
+                PixmapIO.writePNG(fh2, pixmap);
+            }
+
             pixmap.dispose();
 
         } catch (Exception e) {
@@ -182,7 +187,9 @@ public class GraphicalMain extends ApplicationAdapter {
     }
 
 
-    static String getFileName() {
-        return "";
+    static String getFileName(RunInfo info) {
+        return info.challengeEntry() + "_" + info.mazename() + "_" + info.cols() + "x" + info.rows() + "_" + info.currentDateTime().format(dtf) + ".png";
     }
+
+    private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
 }

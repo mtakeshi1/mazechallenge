@@ -53,6 +53,7 @@ public class Configuration {
     public static final Color BORDERCOLOR = Color.WHITE;
     public static final Color VISITEDCOLOR = Color.YELLOW;
 
+    public static boolean screenshotOnClose = false;
 
     ///////// CLI
     public static boolean printMazeCli = false; // when a maze starts, print it ( just to help debugging )
