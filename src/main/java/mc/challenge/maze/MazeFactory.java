@@ -41,10 +41,12 @@ public class MazeFactory {
     }
 
     public static Maze getHuge1wMazeFromFile(int index) {
+        System.out.println("huge 1w");
         return print(new Width1Maze("width1huge_" + index + ".map"));
     }
 
     public static Maze getLarge1wMazeFromFile(int index) {
+        System.out.println("large 1w");
         return print(new Width1Maze("width1large_" + index + ".map"));
     }
 

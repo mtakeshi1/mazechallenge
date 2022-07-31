@@ -36,7 +36,7 @@ public class MazeMap {
 		Position diff = dir.getTP();
 		Position newPos = pos.plus(diff.row(), diff.col());
 		if (getType(newPos) == CellType.WLL) {
-			System.out.println("Invalid move");
+//			System.out.println("Invalid move");
 			return false;
 		}
 		pos = newPos;
