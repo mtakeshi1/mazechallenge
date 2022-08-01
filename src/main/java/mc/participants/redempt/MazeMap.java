@@ -1,4 +1,4 @@
-package mc.redempt;
+package mc.participants.redempt;
 
 import mc.challenge.maze.Direction;
 import mc.challenge.maze.Maze.CellType;

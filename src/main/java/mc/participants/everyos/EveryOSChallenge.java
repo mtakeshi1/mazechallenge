@@ -1,4 +1,4 @@
-	package mc.everyos;
+	package mc.participants.everyos;
 
     import mc.Configuration;
     import mc.challenge.Challenge;
