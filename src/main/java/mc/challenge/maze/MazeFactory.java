@@ -6,6 +6,7 @@ import mc.challenge.maze.mazetypes.EmptyMaze;
 import mc.challenge.maze.mazetypes.FlowingCaveMaze;
 import mc.challenge.maze.mazetypes.ScatterMaze;
 import mc.challenge.maze.mazetypes.Width1Maze;
+import squidpony.squidmath.GWTRNG;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,10 @@ public class MazeFactory {
 
     public static Maze getDungeon(int size) {
         return print(new DungeonMaze(size));
+    }
+
+    public static Maze getDungeon(int size, long seed) {
+        return print(new DungeonMaze(DungeonMaze.getDungeonArray(size, size, new GWTRNG(seed))));
     }
 
     public static Maze getFlowingCave(int size) {

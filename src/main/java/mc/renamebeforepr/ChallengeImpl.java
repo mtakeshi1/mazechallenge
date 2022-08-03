@@ -7,7 +7,10 @@ import mc.challenge.maze.HeadlessMain;
 import mc.challenge.maze.Maze.CellType;
 import mc.challenge.maze.MazeFactory;
 
-import java.util.Arrays;
+import java.util.*;
+import java.util.stream.IntStream;
+
+import static java.util.Collections.max;
 
 /**
  * The whole challenge can be completed by just adding to this file.
@@ -21,12 +24,27 @@ import java.util.Arrays;
  */
 public class ChallengeImpl implements Challenge {
 
-    private int counter = 1;
-    private int counter2 = 1;
-    private int index = 0;
-    private final Direction[] dirs = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
-    // feel free to delete every field above and implement something usefull
+    public static final Position CENTER = new Position(6, 6);
 
+    private Position targetPosition = CENTER;
+    private Position currentPosition = CENTER;
+    private Direction selectedDirection = Direction.NORTH;
+
+    private Map<Position, CellType> adjustedPositions = new HashMap<>();
+    private List<Position> selectedPath = new ArrayList<>();
+    private int minRow, maxRow, minCol, maxCol;
+
+    private static class Path {
+        private final Position destination;
+        private final Path previousPath;
+        private final int steps;
+
+        public Path(Position destination, Path previousPath, int steps) {
+            this.destination = destination;
+            this.previousPath = previousPath;
+            this.steps = steps;
+        }
+    }
 
     /**
      * This method will be called on init and after each move.
@@ -35,7 +53,104 @@ public class ChallengeImpl implements Challenge {
      */
     @Override
     public void handleLineOfSightUpdate(CellType[][] los) {
-//        printLOSUpdate(los); // Uncomment this for debug printing the array
+        if (this.maxRow == 0) {
+            this.maxRow = los.length - 1;
+            this.maxCol = los[0].length - 1;
+        }
+        Position exit = findExit(los);
+        if (exit != null && !exit.equals(targetPosition)) {
+            // TODO overwrite target position
+
+        }
+        if (targetPosition == null || currentPosition.equals(targetPosition)) {
+            targetPosition = findExit(los);
+            if (targetPosition == null) {
+                targetPosition = findBestExplorePosition(los);
+            }
+        }
+        this.selectedDirection = findPath(CENTER, targetPosition, los);
+        adjustPositions(selectedDirection);
+        //TODO update positions
+    }
+
+    private void adjustPositions(Direction selectedDirection) {
+        //TODO
+    }
+
+    public static Direction findPath(Position from, Position to, CellType[][] los) {
+        SortedSet<FringeEntry> fringe = new TreeSet<>(Comparator.comparingInt(FringeEntry::cost).thenComparingInt(System::identityHashCode));
+        fringe.add(new FringeEntry(null, from, 0));
+        Set<Position> visited = new HashSet<>();
+        while (!fringe.isEmpty()) {
+            FringeEntry first = fringe.first();
+            fringe.remove(first);
+            visited.add(first.destination());
+            if (to.equals(first.destination())) {
+                return findNextPath(from, first);
+            }
+            explore(first.destination(), first, los, fringe, visited, 0);
+        }
+        throw new RuntimeException("no path from " + from + " to: " + to);
+//        return Direction.NORTH;
+    }
+
+    public static Direction findNextPath(Position from, FringeEntry first) {
+        if (first.getSource().equals(from)) {
+            return calculateDirection(from, first.destination());
+        }
+        return findNextPath(from, first.previousPath());
+    }
+
+    public static Direction calculateDirection(Position from, Position destination) {
+        for (Direction direction : Direction.values()) {
+            if (from.move(direction).equals(destination)) {
+                return direction;
+            }
+        }
+        throw new RuntimeException("No direction to move from: " + from + " to " + destination);
+    }
+
+    public static void explore(Position from, FringeEntry current, CellType[][] los, SortedSet<FringeEntry> fringe, Set<Position> visited, int cost) {
+        int newCost = cost + 1;
+        for (Direction direction : Direction.values()) {
+            var next = from.move(direction);
+            if (!visited.contains(next) && next.isWithin(los) && next.cellAt(los) != CellType.WLL && next.cellAt(los) != CellType.UNK) {
+                FringeEntry entry = new FringeEntry(current, next, newCost);
+                fringe.add(entry);
+            }
+        }
+    }
+
+    private record FloorCount(long count, Direction direction) {
+    }
+
+    private Position findBestExplorePosition(CellType[][] los) {
+        FloorCount north = new FloorCount(IntStream.range(0, los.length).mapToObj(i -> los[0][i]).filter(ct -> ct == CellType.FLR).count(), Direction.NORTH);
+        FloorCount east = new FloorCount(IntStream.range(0, los.length).mapToObj(i -> los[i][los.length - 1]).filter(ct -> ct == CellType.FLR).count(), Direction.EAST);
+        FloorCount south = new FloorCount(IntStream.range(0, los.length).mapToObj(i -> los[los.length - 1][i]).filter(ct -> ct == CellType.FLR).count(), Direction.SOUTH);
+        FloorCount west = new FloorCount(IntStream.range(0, los.length).mapToObj(i -> los[i][0]).filter(ct -> ct == CellType.FLR).count(), Direction.WEST);
+        Comparator<FloorCount> comparator = Comparator.comparingLong(FloorCount::count).thenComparing(FloorCount::direction);
+        FloorCount betterDirection = max(Arrays.asList(north, east, south, west), comparator);
+//        Position target = CENTER.move(betterDirection.direction());
+//        while (target.cellAt(los) == CellType.FLR) {
+//            Position next = target.move(betterDirection.direction());
+//            if (next.cellAt(los) != CellType.FLR) {
+//                return target;
+//            }
+//            target = next;
+//        }
+        return CENTER.move(betterDirection.direction());
+    }
+
+    private Position findExit(CellType[][] los) {
+        for (int row = 0; row < los.length; row++) {
+            for (int col = 0; col < los[row].length; col++) {
+                if (los[row][col] == CellType.FSH) {
+                    return new Position(row, col);
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -46,16 +161,11 @@ public class ChallengeImpl implements Challenge {
      */
     @Override
     public Direction getMove() {
+        return selectedDirection;
+    }
 
-        // this is just here so that the player will move a bit
-        if (counter2 == 0) {
-            index++;
-            index %= 4;
-            counter++;
-            counter2 = counter;
-        }
-        counter2--;
-        return dirs[index];
+    public static Position nextPosition(Position currentPosition, Direction direction) {
+        return currentPosition.move(direction);
     }
 
 
@@ -69,6 +179,7 @@ public class ChallengeImpl implements Challenge {
 //                        Configuration.MEDIUM
 //                        Configuration.LARGE
 //                        Configuration.HUGE
+                        , 100
                 )
         ).doAllMoves();
     }
