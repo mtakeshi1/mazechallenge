@@ -1,6 +1,7 @@
 package mc.renamebeforepr;
 
 import mc.challenge.maze.Direction;
+import mc.challenge.maze.Maze;
 
 public interface Position {
 
@@ -24,6 +25,35 @@ public interface Position {
         }
         throw new RuntimeException("cannot move from " + this + " to " + remove);
     }
+
+    interface PositionConstructor<E> {
+        E build(int row, int col);
+    }
+
+    default Maze.CellType cellAt(Maze.CellType[][] maze) {
+        return maze[this.row()][this.col()];
+    }
+
+    default boolean isWithin(Maze.CellType[][] maze) {
+        return this.row() < maze.length && this.col() < maze[0].length;
+    }
+
+    default <E extends Position> E walk(Direction direction, PositionConstructor<E> constructor) {
+        return switch (direction) {
+            case NORTH -> constructor.build(this.row() + 1, this.col());
+            case EAST -> constructor.build(this.row(), this.col() + 1);
+            case SOUTH -> constructor.build(this.row() - 1, this.col());
+            case WEST -> constructor.build(this.row(), this.col() - 1);
+        };
+    }
+//    public LosPosition move(Direction direction) {
+//        return switch (direction) {
+//            case NORTH -> new LosPosition(this.row + 1, this.col);
+//            case EAST -> new LosPosition(this.row, this.col + 1);
+//            case SOUTH -> new LosPosition(this.row - 1, this.col);
+//            case WEST -> new LosPosition(this.row, this.col - 1);
+//        };
+//    }
 
 
 }

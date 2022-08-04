@@ -27,7 +27,7 @@ public class ChallengeImpl implements Challenge {
 
     public static final LosPosition CENTER = new LosPosition(6, 6);
     private AbsolutePosition targetPosition = null;
-    private AbsolutePosition currentPosition = new AbsolutePosition(CENTER.row(), CENTER.col());
+//    private AbsolutePosition currentPosition = new AbsolutePosition(CENTER.row(), CENTER.col());
 
     private PositionOffset offset = new PositionOffset(0, 0);
     private Direction selectedDirection = Direction.NORTH;
@@ -60,6 +60,7 @@ public class ChallengeImpl implements Challenge {
         if (selectedPath.isEmpty()) {
             traceNextPath();
         }
+        AbsolutePosition currentPosition = offset.plus(CENTER);
         AbsolutePosition remove = selectedPath.remove();
         this.selectedDirection = currentPosition.directionTo(remove);
         this.offset = offset.walk(this.selectedDirection);
@@ -69,7 +70,19 @@ public class ChallengeImpl implements Challenge {
         //TODO
     }
 
+    /**
+     * This method will be called before each move.
+     * Here you must supply the program with a 'Direction', an enum that can be: NORTH, SOUTH, EAST or WEST
+     * <p>
+     * 'You' will walk in that direction unless there is a wall there.
+     */
+    @Override
+    public Direction getMove() {
+        return selectedDirection;
+    }
+
     private void newGridSpotted(CellType[][] los) {
+        //optimize according to last moved direction, don't need to probe the entire array every time
         for (int row = 0; row < los.length; row++) {
             for (int col = 0; col < los[0].length; col++) {
                 LosPosition relative = new LosPosition(row, col);
@@ -117,7 +130,7 @@ public class ChallengeImpl implements Challenge {
 
     public static Direction calculateDirection(LosPosition from, LosPosition destination) {
         for (Direction direction : Direction.values()) {
-            if (from.move(direction).equals(destination)) {
+            if (from.walk(direction).equals(destination)) {
                 return direction;
             }
         }
@@ -127,15 +140,15 @@ public class ChallengeImpl implements Challenge {
     public static void explore(LosPosition from, FringeEntry current, CellType[][] los, SortedSet<FringeEntry> fringe, Set<LosPosition> visited, int cost) {
         int newCost = cost + 1;
         for (Direction direction : Direction.values()) {
-            var next = from.move(direction);
+            var next = from.walk(direction);
             if (!visited.contains(next) && next.isWithin(los) && next.cellAt(los) != CellType.WLL && next.cellAt(los) != CellType.UNK) {
                 FringeEntry entry = new FringeEntry(current, next, newCost);
                 fringe.add(entry);
             }
         }
     }
-
     private record FloorCount(long count, Direction direction) {
+
     }
 
     private LosPosition findBestExplorePosition(CellType[][] los) {
@@ -153,7 +166,7 @@ public class ChallengeImpl implements Challenge {
 //            }
 //            target = next;
 //        }
-        return CENTER.move(betterDirection.direction());
+        return CENTER.walk(betterDirection.direction());
     }
 
     private LosPosition findExit(CellType[][] los) {
@@ -166,22 +179,6 @@ public class ChallengeImpl implements Challenge {
         }
         return null;
     }
-
-    /**
-     * This method will be called before each move.
-     * Here you must supply the program with a 'Direction', an enum that can be: NORTH, SOUTH, EAST or WEST
-     * <p>
-     * 'You' will walk in that direction unless there is a wall there.
-     */
-    @Override
-    public Direction getMove() {
-        return selectedDirection;
-    }
-
-    public static LosPosition nextPosition(LosPosition currentPosition, Direction direction) {
-        return currentPosition.move(direction);
-    }
-
 
     //I put a convenience launcher here in case you want to run a single maze headless.
     public static void main(String[] args) {
