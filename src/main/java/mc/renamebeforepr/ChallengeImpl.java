@@ -8,10 +8,6 @@ import mc.challenge.maze.Maze.CellType;
 import mc.challenge.maze.MazeFactory;
 
 import java.util.*;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.stream.IntStream;
-
-import static java.util.Collections.max;
 
 /**
  * The whole challenge can be completed by just adding to this file.
@@ -26,7 +22,7 @@ import static java.util.Collections.max;
 public class ChallengeImpl implements Challenge {
 
     public static final LosPosition CENTER = new LosPosition(6, 6);
-    private AbsolutePosition targetPosition = null;
+    private AbsolutePosition finishLine = null;
 //    private AbsolutePosition currentPosition = new AbsolutePosition(CENTER.row(), CENTER.col());
 
     private PositionOffset offset = new PositionOffset(0, 0);
@@ -34,8 +30,8 @@ public class ChallengeImpl implements Challenge {
     private Map<AbsolutePosition, CellType> knownCells = new HashMap<>();
     private Queue<AbsolutePosition> selectedPath = new ArrayDeque<>();
 
-    private AbsolutePosition topLeft = new AbsolutePosition(0, 0);
-    private AbsolutePosition bottomRight = new AbsolutePosition(12, 12);
+    private AbsolutePosition min = new AbsolutePosition(0, 0);
+    private AbsolutePosition max = new AbsolutePosition(12, 12);
 
     private static class Path {
         private final LosPosition destination;
@@ -57,17 +53,13 @@ public class ChallengeImpl implements Challenge {
     @Override
     public void handleLineOfSightUpdate(CellType[][] los) {
         newGridSpotted(los);
-        if (selectedPath.isEmpty()) {
-            traceNextPath();
-        }
         AbsolutePosition currentPosition = offset.plus(CENTER);
+        if (selectedPath.isEmpty()) {
+            traceNextPath(currentPosition);
+        }
         AbsolutePosition remove = selectedPath.remove();
         this.selectedDirection = currentPosition.directionTo(remove);
         this.offset = offset.walk(this.selectedDirection);
-    }
-
-    private void traceNextPath() {
-        //TODO
     }
 
     /**
@@ -81,6 +73,11 @@ public class ChallengeImpl implements Challenge {
         return selectedDirection;
     }
 
+    private void traceNextPath(AbsolutePosition currentPosition) {
+        AbsolutePosition target = finishLine != null ? finishLine : findBestExplorePosition();
+        selectedPath.addAll(findPath(currentPosition, target, knownCells));
+    }
+
     private void newGridSpotted(CellType[][] los) {
         //optimize according to last moved direction, don't need to probe the entire array every time
         for (int row = 0; row < los.length; row++) {
@@ -90,12 +87,14 @@ public class ChallengeImpl implements Challenge {
                 AbsolutePosition absolute = offset.plus(relative);
                 if (cellType != CellType.UNK && !knownCells.containsKey(absolute)) {
                     knownCells.put(absolute, cellType);
-                    if (cellType == CellType.FSH && targetPosition == null) {
+                    if (cellType == CellType.FSH && finishLine == null) {
                         // we just found the finish line, b-line straight to it
-                        targetPosition = absolute;
+                        finishLine = absolute;
                         this.selectedPath.clear();
                     }
                 }
+                min = new AbsolutePosition(Math.min(min.row(), absolute.row()), Math.min(min.col(), absolute.col()));
+                max = new AbsolutePosition(Math.min(max.row(), absolute.row()), Math.min(max.col(), absolute.col()));
             }
         }
     }
@@ -104,31 +103,33 @@ public class ChallengeImpl implements Challenge {
         //TODO
     }
 
-    public static Direction findPath(LosPosition from, LosPosition to, CellType[][] los) {
+    public static Collection<AbsolutePosition> findPath(AbsolutePosition from, AbsolutePosition to, Map<AbsolutePosition, CellType> knownCells) {
         SortedSet<FringeEntry> fringe = new TreeSet<>(Comparator.comparingInt(FringeEntry::cost).thenComparingInt(System::identityHashCode));
         fringe.add(new FringeEntry(null, from, 0));
-        Set<LosPosition> visited = new HashSet<>();
+        Set<AbsolutePosition> visited = new HashSet<>();
         while (!fringe.isEmpty()) {
             FringeEntry first = fringe.first();
             fringe.remove(first);
             visited.add(first.destination());
             if (to.equals(first.destination())) {
-                return findNextPath(from, first);
+                return findNextPath(from, first, new LinkedList<>());
             }
-            explore(first.destination(), first, los, fringe, visited, 0);
+            explore(first.destination(), first, fringe, visited, 0, knownCells);
         }
         throw new RuntimeException("no path from " + from + " to: " + to);
 //        return Direction.NORTH;
     }
 
-    public static Direction findNextPath(LosPosition from, FringeEntry first) {
+    public static Collection<AbsolutePosition> findNextPath(AbsolutePosition from, FringeEntry first, LinkedList<AbsolutePosition> container) {
+        Objects.requireNonNull(first, "should not reach end of chain");
         if (first.getSource().equals(from)) {
-            return calculateDirection(from, first.destination());
+            return container;
         }
-        return findNextPath(from, first.previousPath());
+        container.addFirst(first.getSource());
+        return findNextPath(from, first.previousPath(), container);
     }
 
-    public static Direction calculateDirection(LosPosition from, LosPosition destination) {
+    public static Direction calculateDirection(Position from, Position destination) {
         for (Direction direction : Direction.values()) {
             if (from.walk(direction).equals(destination)) {
                 return direction;
@@ -137,36 +138,26 @@ public class ChallengeImpl implements Challenge {
         throw new RuntimeException("No direction to move from: " + from + " to " + destination);
     }
 
-    public static void explore(LosPosition from, FringeEntry current, CellType[][] los, SortedSet<FringeEntry> fringe, Set<LosPosition> visited, int cost) {
+    public static void explore(AbsolutePosition from, FringeEntry current, SortedSet<FringeEntry> fringe, Set<AbsolutePosition> visited, int cost, Map<AbsolutePosition, CellType> knownCells) {
         int newCost = cost + 1;
         for (Direction direction : Direction.values()) {
             var next = from.walk(direction);
-            if (!visited.contains(next) && next.isWithin(los) && next.cellAt(los) != CellType.WLL && next.cellAt(los) != CellType.UNK) {
+            CellType type = knownCells.get(next);
+            //next.isWithin(los) && next.cellAt(los) != CellType.WLL && next.cellAt(los) != CellType.UNK
+            if (!visited.contains(next) && type != null && type != CellType.WLL && type != CellType.UNK) {
                 FringeEntry entry = new FringeEntry(current, next, newCost);
                 fringe.add(entry);
             }
         }
     }
+
     private record FloorCount(long count, Direction direction) {
 
     }
 
-    private LosPosition findBestExplorePosition(CellType[][] los) {
-        FloorCount north = new FloorCount(IntStream.range(0, los.length).mapToObj(i -> los[0][i]).filter(ct -> ct == CellType.FLR).count(), Direction.NORTH);
-        FloorCount east = new FloorCount(IntStream.range(0, los.length).mapToObj(i -> los[i][los.length - 1]).filter(ct -> ct == CellType.FLR).count(), Direction.EAST);
-        FloorCount south = new FloorCount(IntStream.range(0, los.length).mapToObj(i -> los[los.length - 1][i]).filter(ct -> ct == CellType.FLR).count(), Direction.SOUTH);
-        FloorCount west = new FloorCount(IntStream.range(0, los.length).mapToObj(i -> los[i][0]).filter(ct -> ct == CellType.FLR).count(), Direction.WEST);
-        Comparator<FloorCount> comparator = Comparator.comparingLong(FloorCount::count).thenComparing(FloorCount::direction);
-        FloorCount betterDirection = max(Arrays.asList(north, east, south, west), comparator);
-//        Position target = CENTER.move(betterDirection.direction());
-//        while (target.cellAt(los) == CellType.FLR) {
-//            Position next = target.move(betterDirection.direction());
-//            if (next.cellAt(los) != CellType.FLR) {
-//                return target;
-//            }
-//            target = next;
-//        }
-        return CENTER.walk(betterDirection.direction());
+    private AbsolutePosition findBestExplorePosition() {
+        //should find the best position that will uncover
+        throw new RuntimeException("not yet implemented");
     }
 
     private LosPosition findExit(CellType[][] los) {

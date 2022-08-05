@@ -38,6 +38,20 @@ public interface Position {
         return this.row() < maze.length && this.col() < maze[0].length;
     }
 
+    default Position walk(Direction direction) {
+        return walk(direction, (r, c) -> new Position() {
+            @Override
+            public int row() {
+                return r;
+            }
+
+            @Override
+            public int col() {
+                return c;
+            }
+        });
+    }
+
     default <E extends Position> E walk(Direction direction, PositionConstructor<E> constructor) {
         return switch (direction) {
             case NORTH -> constructor.build(this.row() + 1, this.col());
