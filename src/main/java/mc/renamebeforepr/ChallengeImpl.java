@@ -25,7 +25,7 @@ public class ChallengeImpl implements Challenge {
 
     public static final LosPosition CENTER = new LosPosition(6, 6);
     private AbsolutePosition finishLine = null;
-//    private AbsolutePosition currentPosition = new AbsolutePosition(CENTER.row(), CENTER.col());
+    private AbsolutePosition currentPosition = new AbsolutePosition(CENTER.row(), CENTER.col());
 
     private PositionOffset offset = new PositionOffset(0, 0);
     private Direction selectedDirection = Direction.NORTH;
@@ -54,14 +54,17 @@ public class ChallengeImpl implements Challenge {
      */
     @Override
     public void handleLineOfSightUpdate(CellType[][] los) {
+        printLOSUpdate(los);
         newGridSpotted(los);
-        AbsolutePosition currentPosition = offset.plus(CENTER);
         if (selectedPath.isEmpty()) {
             traceNextPath(currentPosition);
         }
         AbsolutePosition remove = selectedPath.remove();
         this.selectedDirection = currentPosition.directionTo(remove);
-        this.offset = offset.walk(this.selectedDirection);
+        System.out.println(selectedDirection);
+//        this.offset = offset.walk(this.selectedDirection);
+        adjustOffset(selectedDirection);
+        this.currentPosition = currentPosition.walk(selectedDirection);
     }
 
     /**
@@ -110,7 +113,7 @@ public class ChallengeImpl implements Challenge {
         }
     }
 
-    private void adjustPositions(Direction selectedDirection) {
+    private void adjustOffset(Direction selectedDirection) {
         this.offset = this.offset.walk(reverse(selectedDirection));
     }
 
@@ -171,12 +174,8 @@ public class ChallengeImpl implements Challenge {
     }
 
     private AbsolutePosition findBestExplorePosition() {
-        Stream<FloorCount> colStream = Stream.concat(
-                IntStream.rangeClosed(min.col(), max.col()).mapToObj(c -> new AbsolutePosition(min.row(), c)).filter(knownCells::containsKey).map(this::countUnknownNeighboors),
-                IntStream.rangeClosed(min.col(), max.col()).mapToObj(c -> new AbsolutePosition(max.row(), c)).filter(knownCells::containsKey).map(this::countUnknownNeighboors)
-        );
-        Stream<FloorCount> rowStream = Stream.concat(IntStream.rangeClosed(min.row(), max.row()).mapToObj(r -> new AbsolutePosition(r, min.col())).filter(knownCells::containsKey).map(this::countUnknownNeighboors), IntStream.rangeClosed(min.row(), max.row()).mapToObj(r -> new AbsolutePosition(r, max.col())).filter(knownCells::containsKey).map(this::countUnknownNeighboors));
-        Optional<FloorCount> max = Stream.concat(colStream, rowStream).max(Comparator.comparingInt(FloorCount::count));
+        Stream<FloorCount> stream = IntStream.rangeClosed(min.col(), max.col()).mapToObj(Integer::valueOf).flatMap(col -> IntStream.rangeClosed(min.row(), max.row()).mapToObj(row -> new AbsolutePosition(row, col))).filter(knownCells::containsKey).map(this::countUnknownNeighboors);
+        Optional<FloorCount> max = stream.max(Comparator.comparingInt(FloorCount::count));
         return max.map(FloorCount::cell).orElseThrow(() -> new RuntimeException("could not find next position to explore"));
     }
 
