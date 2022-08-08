@@ -8,6 +8,8 @@ import mc.challenge.maze.Maze.CellType;
 import mc.challenge.maze.MazeFactory;
 
 import java.util.*;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * The whole challenge can be completed by just adding to this file.
@@ -73,6 +75,15 @@ public class ChallengeImpl implements Challenge {
         return selectedDirection;
     }
 
+    public static Direction reverse(Direction direction) {
+        return switch (direction) {
+            case NORTH -> Direction.SOUTH;
+            case EAST -> Direction.WEST;
+            case SOUTH -> Direction.NORTH;
+            case WEST -> Direction.EAST;
+        };
+    }
+
     private void traceNextPath(AbsolutePosition currentPosition) {
         AbsolutePosition target = finishLine != null ? finishLine : findBestExplorePosition();
         selectedPath.addAll(findPath(currentPosition, target, knownCells));
@@ -94,13 +105,13 @@ public class ChallengeImpl implements Challenge {
                     }
                 }
                 min = new AbsolutePosition(Math.min(min.row(), absolute.row()), Math.min(min.col(), absolute.col()));
-                max = new AbsolutePosition(Math.min(max.row(), absolute.row()), Math.min(max.col(), absolute.col()));
+                max = new AbsolutePosition(Math.max(max.row(), absolute.row()), Math.max(max.col(), absolute.col()));
             }
         }
     }
 
     private void adjustPositions(Direction selectedDirection) {
-        //TODO
+        this.offset = this.offset.walk(reverse(selectedDirection));
     }
 
     public static Collection<AbsolutePosition> findPath(AbsolutePosition from, AbsolutePosition to, Map<AbsolutePosition, CellType> knownCells) {
@@ -151,13 +162,22 @@ public class ChallengeImpl implements Challenge {
         }
     }
 
-    private record FloorCount(long count, Direction direction) {
+    private record FloorCount(int count, AbsolutePosition cell) {
+    }
 
+    private FloorCount countUnknownNeighboors(AbsolutePosition position) {
+        int count = (int) Arrays.stream(Direction.values()).map(position::walk).map(knownCells::get).filter(Objects::nonNull).count();
+        return new FloorCount(count, position);
     }
 
     private AbsolutePosition findBestExplorePosition() {
-        //should find the best position that will uncover
-        throw new RuntimeException("not yet implemented");
+        Stream<FloorCount> colStream = Stream.concat(
+                IntStream.rangeClosed(min.col(), max.col()).mapToObj(c -> new AbsolutePosition(min.row(), c)).filter(knownCells::containsKey).map(this::countUnknownNeighboors),
+                IntStream.rangeClosed(min.col(), max.col()).mapToObj(c -> new AbsolutePosition(max.row(), c)).filter(knownCells::containsKey).map(this::countUnknownNeighboors)
+        );
+        Stream<FloorCount> rowStream = Stream.concat(IntStream.rangeClosed(min.row(), max.row()).mapToObj(r -> new AbsolutePosition(r, min.col())).filter(knownCells::containsKey).map(this::countUnknownNeighboors), IntStream.rangeClosed(min.row(), max.row()).mapToObj(r -> new AbsolutePosition(r, max.col())).filter(knownCells::containsKey).map(this::countUnknownNeighboors));
+        Optional<FloorCount> max = Stream.concat(colStream, rowStream).max(Comparator.comparingInt(FloorCount::count));
+        return max.map(FloorCount::cell).orElseThrow(() -> new RuntimeException("could not find next position to explore"));
     }
 
     private LosPosition findExit(CellType[][] los) {
