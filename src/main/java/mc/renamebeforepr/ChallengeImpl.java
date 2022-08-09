@@ -30,7 +30,8 @@ public class ChallengeImpl implements Challenge {
     private PositionOffset offset = new PositionOffset(0, 0);
     private Direction selectedDirection = Direction.NORTH;
     private Map<AbsolutePosition, CellType> knownCells = new HashMap<>();
-    private Queue<AbsolutePosition> selectedPath = new ArrayDeque<>();
+    private List<AbsolutePosition> selectedPath = new ArrayList<>();
+    private int currentIndex;
 
     private AbsolutePosition min = new AbsolutePosition(0, 0);
     private AbsolutePosition max = new AbsolutePosition(12, 12);
@@ -56,15 +57,25 @@ public class ChallengeImpl implements Challenge {
     public void handleLineOfSightUpdate(CellType[][] los) {
         printLOSUpdate(los);
         newGridSpotted(los);
-        if (selectedPath.isEmpty()) {
+        if (selectedPath.isEmpty() || currentIndex >= selectedPath.size() || currentTargetUnfeasible()) {
+            selectedPath.clear();
+            currentIndex = 0;
             traceNextPath(currentPosition);
         }
-        AbsolutePosition remove = selectedPath.remove();
+        printOut(Collections.emptyMap());
+
+        AbsolutePosition remove = selectedPath.get(currentIndex++);
         this.selectedDirection = currentPosition.directionTo(remove);
         System.out.println(selectedDirection);
 //        this.offset = offset.walk(this.selectedDirection);
         adjustOffset(selectedDirection);
         this.currentPosition = currentPosition.walk(selectedDirection);
+    }
+
+    private boolean currentTargetUnfeasible() {
+        AbsolutePosition target = selectedPath.get(selectedPath.size() - 1);
+        FloorCount floorCount = countUnknownNeighboors(target);
+        return floorCount.count() == 0;
     }
 
     /**
@@ -89,7 +100,11 @@ public class ChallengeImpl implements Challenge {
 
     private void traceNextPath(AbsolutePosition currentPosition) {
         AbsolutePosition target = finishLine != null ? finishLine : findBestExplorePosition();
-        selectedPath.addAll(findPath(currentPosition, target, knownCells));
+        Collection<AbsolutePosition> path = findPath(currentPosition, target, knownCells);
+        if (path == null) {
+            printOut(Map.of(currentPosition, " F ", target, " T "));
+        }
+        selectedPath.addAll(path);
     }
 
     private void newGridSpotted(CellType[][] los) {
@@ -99,7 +114,7 @@ public class ChallengeImpl implements Challenge {
                 LosPosition relative = new LosPosition(row, col);
                 CellType cellType = relative.cellAt(los);
                 AbsolutePosition absolute = offset.plus(relative);
-                if (cellType != CellType.UNK && !knownCells.containsKey(absolute)) {
+                if (!knownCells.containsKey(absolute) || knownCells.get(absolute) == CellType.UNK) {
                     knownCells.put(absolute, cellType);
                     if (cellType == CellType.FSH && finishLine == null) {
                         // we just found the finish line, b-line straight to it
@@ -114,7 +129,8 @@ public class ChallengeImpl implements Challenge {
     }
 
     private void adjustOffset(Direction selectedDirection) {
-        this.offset = this.offset.walk(reverse(selectedDirection));
+//        this.offset = this.offset.walk(reverse(selectedDirection));
+        this.offset = this.offset.walk(selectedDirection);
     }
 
     public static Collection<AbsolutePosition> findPath(AbsolutePosition from, AbsolutePosition to, Map<AbsolutePosition, CellType> knownCells) {
@@ -128,9 +144,10 @@ public class ChallengeImpl implements Challenge {
             if (to.equals(first.destination())) {
                 return findNextPath(from, first, new LinkedList<>());
             }
-            explore(first.destination(), first, fringe, visited, 0, knownCells);
+            explore(first.destination(), first, fringe, visited, first.cost(), knownCells);
         }
-        throw new RuntimeException("no path from " + from + " to: " + to);
+        return null;
+//        throw new RuntimeException("no path from " + from + " to: " + to);
 //        return Direction.NORTH;
     }
 
@@ -169,25 +186,47 @@ public class ChallengeImpl implements Challenge {
     }
 
     private FloorCount countUnknownNeighboors(AbsolutePosition position) {
-        int count = (int) Arrays.stream(Direction.values()).map(position::walk).map(knownCells::get).filter(Objects::nonNull).count();
+        int count = (int) Arrays.stream(Direction.values()).map(position::walk).map(knownCells::get).filter(Objects::nonNull).filter(ct -> ct == CellType.UNK).count();
         return new FloorCount(count, position);
     }
 
     private AbsolutePosition findBestExplorePosition() {
-        Stream<FloorCount> stream = IntStream.rangeClosed(min.col(), max.col()).mapToObj(Integer::valueOf).flatMap(col -> IntStream.rangeClosed(min.row(), max.row()).mapToObj(row -> new AbsolutePosition(row, col))).filter(knownCells::containsKey).map(this::countUnknownNeighboors);
+        // TODO make this and the path finding more lenient - if it can't find the target, try to move do the closest location
+        Stream<FloorCount> stream = IntStream.rangeClosed(min.col(), max.col()).mapToObj(Integer::valueOf).flatMap(col -> IntStream.rangeClosed(min.row(), max.row()).mapToObj(row -> new AbsolutePosition(row, col))).filter(abs -> knownCells.get(abs) == CellType.FLR).map(this::countUnknownNeighboors);
         Optional<FloorCount> max = stream.max(Comparator.comparingInt(FloorCount::count));
         return max.map(FloorCount::cell).orElseThrow(() -> new RuntimeException("could not find next position to explore"));
     }
 
-    private LosPosition findExit(CellType[][] los) {
-        for (int row = 0; row < los.length; row++) {
-            for (int col = 0; col < los[row].length; col++) {
-                if (los[row][col] == CellType.FSH) {
-                    return new LosPosition(row, col);
-                }
-            }
+    private void printOut(Map<AbsolutePosition, String> markers) {
+        IntStream.rangeClosed(min.row(), max.row()).mapToObj(Integer::valueOf).flatMap(row -> IntStream.rangeClosed(min.col(), max.col()).mapToObj(col -> new AbsolutePosition(row, col))).map(p -> format(p, markers)).forEachOrdered(System.out::print);
+    }
+
+    private String format(AbsolutePosition absolutePosition, Map<AbsolutePosition, String> markers) {
+        CellType cellType = knownCells.get(absolutePosition);
+        String base = "";
+        int indexOf = selectedPath.indexOf(absolutePosition);
+        if (markers.containsKey(absolutePosition)) {
+            base = markers.get(absolutePosition);
+        } else if (currentPosition.equals(absolutePosition)) {
+            base = " C ";
+        } else if (cellType == null || cellType == CellType.UNK) {
+            base = " ? ";
+        } else if (indexOf >= 0) {
+            base = String.format("%3d", indexOf);
+        } else {
+            base = switch (cellType) {
+                case WLL -> " W ";
+                case FSH -> " F ";
+                case SRT -> " S ";
+                case FLR -> "   ";
+                default -> " ? ";
+            };
         }
-        return null;
+
+        if (absolutePosition.col() == max.col()) {
+            base += '\n';
+        }
+        return base;
     }
 
     //I put a convenience launcher here in case you want to run a single maze headless.

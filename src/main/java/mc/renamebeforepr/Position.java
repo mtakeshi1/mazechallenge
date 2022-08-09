@@ -61,9 +61,9 @@ public interface Position {
 
     default <E extends Position> E walk(Direction direction, PositionConstructor<E> constructor) {
         return switch (direction) {
-            case NORTH -> constructor.build(this.row() - 1, this.col());
+            case NORTH -> constructor.build(this.row() + 1, this.col());
             case EAST -> constructor.build(this.row(), this.col() + 1);
-            case SOUTH -> constructor.build(this.row() + 1, this.col());
+            case SOUTH -> constructor.build(this.row() - 1, this.col());
             case WEST -> constructor.build(this.row(), this.col() - 1);
         };
     }
