@@ -36,18 +36,6 @@ public class ChallengeImpl implements Challenge {
     private AbsolutePosition min = new AbsolutePosition(0, 0);
     private AbsolutePosition max = new AbsolutePosition(12, 12);
 
-    private static class Path {
-        private final LosPosition destination;
-        private final Path previousPath;
-        private final int steps;
-
-        public Path(LosPosition destination, Path previousPath, int steps) {
-            this.destination = destination;
-            this.previousPath = previousPath;
-            this.steps = steps;
-        }
-    }
-
     /**
      * This method will be called on init and after each move.
      *
@@ -55,9 +43,9 @@ public class ChallengeImpl implements Challenge {
      */
     @Override
     public void handleLineOfSightUpdate(CellType[][] los) {
-        printLOSUpdate(los);
         newGridSpotted(los);
         if (selectedPath.isEmpty() || currentIndex >= selectedPath.size() || currentTargetUnfeasible()) {
+            System.out.println("Looking for new destination");
             selectedPath.clear();
             currentIndex = 0;
             traceNextPath(currentPosition);
@@ -65,11 +53,15 @@ public class ChallengeImpl implements Challenge {
         printOut(Collections.emptyMap());
 
         AbsolutePosition remove = selectedPath.get(currentIndex++);
-        this.selectedDirection = currentPosition.directionTo(remove);
-        System.out.println(selectedDirection);
+        if (!remove.equals(currentPosition)) {
+            this.selectedDirection = currentPosition.directionTo(remove);
+            System.out.println(selectedDirection);
+            adjustOffset(selectedDirection);
+            this.currentPosition = currentPosition.walk(selectedDirection);
+        } else {
+            System.out.println("Done?");
+        }
 //        this.offset = offset.walk(this.selectedDirection);
-        adjustOffset(selectedDirection);
-        this.currentPosition = currentPosition.walk(selectedDirection);
     }
 
     private boolean currentTargetUnfeasible() {
@@ -100,7 +92,8 @@ public class ChallengeImpl implements Challenge {
 
     private void traceNextPath(AbsolutePosition currentPosition) {
         AbsolutePosition target = finishLine != null ? finishLine : findBestExplorePosition();
-        Collection<AbsolutePosition> path = findPath(currentPosition, target, knownCells);
+        System.out.println("New destination selected: " + target);
+        Collection<AbsolutePosition> path = findPath(currentPosition, target, knownCells, true);
         if (path == null) {
             printOut(Map.of(currentPosition, " F ", target, " T "));
         }
@@ -134,26 +127,41 @@ public class ChallengeImpl implements Challenge {
     }
 
     public static Collection<AbsolutePosition> findPath(AbsolutePosition from, AbsolutePosition to, Map<AbsolutePosition, CellType> knownCells) {
-        SortedSet<FringeEntry> fringe = new TreeSet<>(Comparator.comparingInt(FringeEntry::cost).thenComparingInt(System::identityHashCode));
+        return findPath(from, to, knownCells, false);
+    }
+
+    public static Collection<AbsolutePosition> findPath(AbsolutePosition from, AbsolutePosition to, Map<AbsolutePosition, CellType> knownCells, boolean lenient) {
+        Queue<FringeEntry> fringe = new PriorityQueue<>(Comparator.comparingInt(FringeEntry::cost).thenComparingInt(System::identityHashCode));
+        Queue<FringeEntry> closestEntries = new PriorityQueue<>(Comparator.comparingDouble(fe -> fe.destination().distanceTo(to)));
         fringe.add(new FringeEntry(null, from, 0));
         Set<AbsolutePosition> visited = new HashSet<>();
         while (!fringe.isEmpty()) {
-            FringeEntry first = fringe.first();
+            FringeEntry first = fringe.remove();
             fringe.remove(first);
             visited.add(first.destination());
+            closestEntries.add(first);
             if (to.equals(first.destination())) {
-                return findNextPath(from, first, new LinkedList<>());
+                LinkedList<AbsolutePosition> container = new LinkedList<>();
+                container.addFirst(first.destination());
+                return findNextPath(from, first, container);
             }
             explore(first.destination(), first, fringe, visited, first.cost(), knownCells);
         }
-        return null;
-//        throw new RuntimeException("no path from " + from + " to: " + to);
-//        return Direction.NORTH;
+        while (!closestEntries.isEmpty()) {
+            var first = closestEntries.remove();
+            LinkedList<AbsolutePosition> container = new LinkedList<>();
+            container.addFirst(first.destination());
+            var path = findNextPath(from, first, container);
+            if (path != null) {
+                return path;
+            }
+        }
+        throw new RuntimeException("no path from: " + from + " to: " + to);
     }
 
     public static Collection<AbsolutePosition> findNextPath(AbsolutePosition from, FringeEntry first, LinkedList<AbsolutePosition> container) {
         Objects.requireNonNull(first, "should not reach end of chain");
-        if (first.getSource().equals(from)) {
+        if (first.getSource() == null || first.getSource().equals(from)) {
             return container;
         }
         container.addFirst(first.getSource());
@@ -169,7 +177,7 @@ public class ChallengeImpl implements Challenge {
         throw new RuntimeException("No direction to move from: " + from + " to " + destination);
     }
 
-    public static void explore(AbsolutePosition from, FringeEntry current, SortedSet<FringeEntry> fringe, Set<AbsolutePosition> visited, int cost, Map<AbsolutePosition, CellType> knownCells) {
+    public static void explore(AbsolutePosition from, FringeEntry current, Collection<? super FringeEntry> fringe, Set<AbsolutePosition> visited, int cost, Map<AbsolutePosition, CellType> knownCells) {
         int newCost = cost + 1;
         for (Direction direction : Direction.values()) {
             var next = from.walk(direction);

@@ -10,6 +10,14 @@ public interface Position {
 
     int col();
 
+    static double square(double x) {
+        return x * x;
+    }
+
+    default double distanceTo(Position another) {
+        return Math.sqrt(square(this.col() - another.col()) + square(this.row() - another.row()));
+    }
+
     default Direction directionTo(Position target) {
 //        if (this.col() == remove.col()) { // north or south
 //            if (this.row() == remove.row() - 1) {
