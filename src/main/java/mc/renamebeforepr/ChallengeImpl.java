@@ -30,11 +30,14 @@ public class ChallengeImpl implements Challenge {
     private PositionOffset offset = new PositionOffset(0, 0);
     private Direction selectedDirection = Direction.NORTH;
     private Map<AbsolutePosition, CellType> knownCells = new HashMap<>();
+    private Set<AbsolutePosition> visitedCells = new HashSet<>();
     private List<AbsolutePosition> selectedPath = new ArrayList<>();
     private int currentIndex;
 
     private AbsolutePosition min = new AbsolutePosition(0, 0);
     private AbsolutePosition max = new AbsolutePosition(12, 12);
+
+    private int searchRadius = 2;
 
     /**
      * This method will be called on init and after each move.
@@ -44,6 +47,7 @@ public class ChallengeImpl implements Challenge {
     @Override
     public void handleLineOfSightUpdate(CellType[][] los) {
         newGridSpotted(los);
+        visitedCells.add(currentPosition);
         if (selectedPath.isEmpty() || currentIndex >= selectedPath.size() || currentTargetUnfeasible()) {
             System.out.println("Looking for new destination");
             selectedPath.clear();
@@ -51,7 +55,6 @@ public class ChallengeImpl implements Challenge {
             traceNextPath(currentPosition);
         }
         printOut(Collections.emptyMap());
-
         AbsolutePosition remove = selectedPath.get(currentIndex++);
         if (!remove.equals(currentPosition)) {
             this.selectedDirection = currentPosition.directionTo(remove);
@@ -131,27 +134,29 @@ public class ChallengeImpl implements Challenge {
     }
 
     public static Collection<AbsolutePosition> findPath(AbsolutePosition from, AbsolutePosition to, Map<AbsolutePosition, CellType> knownCells, boolean lenient) {
+        //TODO this needs work, path finding
         Queue<FringeEntry> fringe = new PriorityQueue<>(Comparator.comparingInt(FringeEntry::cost).thenComparingInt(System::identityHashCode));
-        Queue<FringeEntry> closestEntries = new PriorityQueue<>(Comparator.comparingDouble(fe -> fe.destination().distanceTo(to)));
+        Queue<FringeEntry> closestEntries = new PriorityQueue<>(Comparator.comparingDouble(fe -> fe.destination().distanceTo(from) + fe.destination().distanceTo(to)));
         fringe.add(new FringeEntry(null, from, 0));
         Set<AbsolutePosition> visited = new HashSet<>();
         while (!fringe.isEmpty()) {
             FringeEntry first = fringe.remove();
-            fringe.remove(first);
             visited.add(first.destination());
-            closestEntries.add(first);
+            if (lenient) {
+                closestEntries.add(first);
+            }
             if (to.equals(first.destination())) {
                 LinkedList<AbsolutePosition> container = new LinkedList<>();
                 container.addFirst(first.destination());
-                return findNextPath(from, first, container);
+                return selectPathTiles(from, first, container);
             }
-            explore(first.destination(), first, fringe, visited, first.cost(), knownCells);
+            explore(first.destination(), first, fringe, visited, knownCells, from, to);
         }
         while (!closestEntries.isEmpty()) {
             var first = closestEntries.remove();
             LinkedList<AbsolutePosition> container = new LinkedList<>();
             container.addFirst(first.destination());
-            var path = findNextPath(from, first, container);
+            var path = selectPathTiles(from, first, container);
             if (path != null) {
                 return path;
             }
@@ -159,32 +164,22 @@ public class ChallengeImpl implements Challenge {
         throw new RuntimeException("no path from: " + from + " to: " + to);
     }
 
-    public static Collection<AbsolutePosition> findNextPath(AbsolutePosition from, FringeEntry first, LinkedList<AbsolutePosition> container) {
+    public static Collection<AbsolutePosition> selectPathTiles(AbsolutePosition from, FringeEntry first, LinkedList<AbsolutePosition> container) {
         Objects.requireNonNull(first, "should not reach end of chain");
         if (first.getSource() == null || first.getSource().equals(from)) {
             return container;
         }
         container.addFirst(first.getSource());
-        return findNextPath(from, first.previousPath(), container);
+        return selectPathTiles(from, first.previousPath(), container);
     }
 
-    public static Direction calculateDirection(Position from, Position destination) {
-        for (Direction direction : Direction.values()) {
-            if (from.walk(direction).equals(destination)) {
-                return direction;
-            }
-        }
-        throw new RuntimeException("No direction to move from: " + from + " to " + destination);
-    }
-
-    public static void explore(AbsolutePosition from, FringeEntry current, Collection<? super FringeEntry> fringe, Set<AbsolutePosition> visited, int cost, Map<AbsolutePosition, CellType> knownCells) {
-        int newCost = cost + 1;
+    public static void explore(AbsolutePosition from, FringeEntry current, Collection<? super FringeEntry> fringe, Set<AbsolutePosition> visited, Map<AbsolutePosition, CellType> knownCells, AbsolutePosition startingPoint, AbsolutePosition goal) {
         for (Direction direction : Direction.values()) {
             var next = from.walk(direction);
             CellType type = knownCells.get(next);
             //next.isWithin(los) && next.cellAt(los) != CellType.WLL && next.cellAt(los) != CellType.UNK
             if (!visited.contains(next) && type != null && type != CellType.WLL && type != CellType.UNK) {
-                FringeEntry entry = new FringeEntry(current, next, newCost);
+                FringeEntry entry = new FringeEntry(current, next, next.stepDistance(startingPoint) + next.stepDistance(goal));
                 fringe.add(entry);
             }
         }
@@ -194,13 +189,36 @@ public class ChallengeImpl implements Challenge {
     }
 
     private FloorCount countUnknownNeighboors(AbsolutePosition position) {
-        int count = (int) Arrays.stream(Direction.values()).map(position::walk).map(knownCells::get).filter(Objects::nonNull).filter(ct -> ct == CellType.UNK).count();
+//        int count = (int) IntStream.rangeClosed(position.row() - searchRadius, position.row() + searchRadius).mapToObj(Integer::valueOf).flatMap(
+//                row -> IntStream.rangeClosed(position.col() - searchRadius, position.col() + searchRadius).mapToObj(col -> new AbsolutePosition(row, col)).filter(cell -> knownCells.get(cell) == CellType.UNK)).count();
+////        int count = (int) Arrays.stream(Direction.values()).map(position::walk).map(knownCells::get).filter(Objects::nonNull).filter(ct -> ct == CellType.UNK).count();
+        int count = countUnknownsAround(position, searchRadius, new HashSet<>());
         return new FloorCount(count, position);
     }
 
+    private int countUnknownsAround(AbsolutePosition center, int steps, Set<AbsolutePosition> visited) {
+        //TODO improve this to find better targets
+        CellType cellType = knownCells.get(center);
+        int c = cellType == CellType.UNK ? 1 : 0;
+        if (steps == 0 || cellType == CellType.WLL) {
+            return c;
+        }
+        for (var dir : Direction.values()) {
+            var next = center.walk(dir);
+            if (!visited.contains(next)) {
+                visited.add(next);
+                c += countUnknownsAround(next, steps - 1, visited);
+            }
+        }
+        return c;
+    }
+
     private AbsolutePosition findBestExplorePosition() {
-        // TODO make this and the path finding more lenient - if it can't find the target, try to move do the closest location
-        Stream<FloorCount> stream = IntStream.rangeClosed(min.col(), max.col()).mapToObj(Integer::valueOf).flatMap(col -> IntStream.rangeClosed(min.row(), max.row()).mapToObj(row -> new AbsolutePosition(row, col))).filter(abs -> knownCells.get(abs) == CellType.FLR).map(this::countUnknownNeighboors);
+        Stream<FloorCount> stream = IntStream.rangeClosed(min.col(), max.col()).mapToObj(Integer::valueOf).flatMap(col -> IntStream.rangeClosed(min.row(), max.row())
+                        .mapToObj(row -> new AbsolutePosition(row, col)))
+                .filter(abs -> !visitedCells.contains(abs))
+                .filter(abs -> knownCells.get(abs) == CellType.FLR)
+                .map(this::countUnknownNeighboors);
         Optional<FloorCount> max = stream.max(Comparator.comparingInt(FloorCount::count));
         return max.map(FloorCount::cell).orElseThrow(() -> new RuntimeException("could not find next position to explore"));
     }

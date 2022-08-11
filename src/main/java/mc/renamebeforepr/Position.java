@@ -2,7 +2,6 @@ package mc.renamebeforepr;
 
 import mc.challenge.maze.Direction;
 import mc.challenge.maze.Maze;
-import org.w3c.dom.html.HTMLDirectoryElement;
 
 public interface Position {
 
@@ -16,6 +15,10 @@ public interface Position {
 
     default double distanceTo(Position another) {
         return Math.sqrt(square(this.col() - another.col()) + square(this.row() - another.row()));
+    }
+
+    default int stepDistance(Position another) {
+        return Math.abs(this.col() - another.col()) + Math.abs(this.row() - another.row());
     }
 
     default Direction directionTo(Position target) {

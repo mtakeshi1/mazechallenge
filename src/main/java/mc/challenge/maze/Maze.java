@@ -346,7 +346,7 @@ public abstract class Maze {
         drawPlayer.accept(getPlayerRelativePosition());
     }
 
-    public void drawVisited(Consumer<boolean[][]> drawVis){
+    public void drawVisited(Consumer<boolean[][]> drawVis) {
         drawVis.accept(exploredvisitedMx());
     }
 
