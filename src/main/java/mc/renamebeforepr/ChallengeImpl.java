@@ -7,6 +7,9 @@ import mc.challenge.maze.HeadlessMain;
 import mc.challenge.maze.Maze.CellType;
 import mc.challenge.maze.MazeFactory;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.*;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -53,8 +56,8 @@ public class ChallengeImpl implements Challenge {
             selectedPath.clear();
             currentIndex = 0;
             traceNextPath(currentPosition);
+            printOut(Collections.emptyMap());
         }
-        printOut(Collections.emptyMap());
         AbsolutePosition remove = selectedPath.get(currentIndex++);
         if (!remove.equals(currentPosition)) {
             this.selectedDirection = currentPosition.directionTo(remove);
@@ -94,8 +97,8 @@ public class ChallengeImpl implements Challenge {
     }
 
     private void traceNextPath(AbsolutePosition currentPosition) {
-        AbsolutePosition target = finishLine != null ? finishLine : findBestExplorePosition();
-        System.out.println("New destination selected: " + target);
+        AbsolutePosition target = finishLine != null ? finishLine : findBestExplorePosition(currentPosition);
+        System.out.println("New destination selected. From:  " + currentPosition + " to: " + target);
         Collection<AbsolutePosition> path = findPath(currentPosition, target, knownCells, true);
         if (path == null) {
             printOut(Map.of(currentPosition, " F ", target, " T "));
@@ -133,11 +136,22 @@ public class ChallengeImpl implements Challenge {
         return findPath(from, to, knownCells, false);
     }
 
+    private static void writeTestCase(AbsolutePosition from, AbsolutePosition to, Map<AbsolutePosition, CellType> knownCells) {
+        try (ObjectOutputStream oout = new ObjectOutputStream(new FileOutputStream("test.bin"))) {
+            oout.writeObject(from);
+            oout.writeObject(to);
+            oout.writeObject(knownCells);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static Collection<AbsolutePosition> findPath(AbsolutePosition from, AbsolutePosition to, Map<AbsolutePosition, CellType> knownCells, boolean lenient) {
         //TODO this needs work, path finding
-        Queue<FringeEntry> fringe = new PriorityQueue<>(Comparator.comparingInt(FringeEntry::cost).thenComparingInt(System::identityHashCode));
+//        writeTestCase(from, to, knownCells);
+        Queue<FringeEntry> fringe = new PriorityQueue<>(Comparator.comparingInt(FringeEntry::cost).thenComparingInt(FringeEntry::steps));
         Queue<FringeEntry> closestEntries = new PriorityQueue<>(Comparator.comparingDouble(fe -> fe.destination().distanceTo(from) + fe.destination().distanceTo(to)));
-        fringe.add(new FringeEntry(null, from, 0));
+        fringe.add(new FringeEntry(null, from, 0, 0));
         Set<AbsolutePosition> visited = new HashSet<>();
         while (!fringe.isEmpty()) {
             FringeEntry first = fringe.remove();
@@ -150,7 +164,7 @@ public class ChallengeImpl implements Challenge {
                 container.addFirst(first.destination());
                 return selectPathTiles(from, first, container);
             }
-            explore(first.destination(), first, fringe, visited, knownCells, from, to);
+            explore(first.destination(), first, fringe, visited, knownCells, from, to, first.steps());
         }
         while (!closestEntries.isEmpty()) {
             var first = closestEntries.remove();
@@ -173,13 +187,14 @@ public class ChallengeImpl implements Challenge {
         return selectPathTiles(from, first.previousPath(), container);
     }
 
-    public static void explore(AbsolutePosition from, FringeEntry current, Collection<? super FringeEntry> fringe, Set<AbsolutePosition> visited, Map<AbsolutePosition, CellType> knownCells, AbsolutePosition startingPoint, AbsolutePosition goal) {
+    public static void explore(AbsolutePosition from, FringeEntry current, Collection<? super FringeEntry> fringe, Set<AbsolutePosition> visited, Map<AbsolutePosition, CellType> knownCells, AbsolutePosition startingPoint, AbsolutePosition goal, int step) {
+        int nextStep = step + 1000;
         for (Direction direction : Direction.values()) {
             var next = from.walk(direction);
             CellType type = knownCells.get(next);
             //next.isWithin(los) && next.cellAt(los) != CellType.WLL && next.cellAt(los) != CellType.UNK
             if (!visited.contains(next) && type != null && type != CellType.WLL && type != CellType.UNK) {
-                FringeEntry entry = new FringeEntry(current, next, next.stepDistance(startingPoint) + next.stepDistance(goal));
+                FringeEntry entry = new FringeEntry(current, next, nextStep, next.stepDistance(startingPoint) + next.stepDistance(goal));
                 fringe.add(entry);
             }
         }
@@ -213,32 +228,55 @@ public class ChallengeImpl implements Challenge {
         return c;
     }
 
-    private AbsolutePosition findBestExplorePosition() {
+    private AbsolutePosition findBestExplorePosition(AbsolutePosition currentPosition) {
         Stream<FloorCount> stream = IntStream.rangeClosed(min.col(), max.col()).mapToObj(Integer::valueOf).flatMap(col -> IntStream.rangeClosed(min.row(), max.row())
                         .mapToObj(row -> new AbsolutePosition(row, col)))
                 .filter(abs -> !visitedCells.contains(abs))
                 .filter(abs -> knownCells.get(abs) == CellType.FLR)
                 .map(this::countUnknownNeighboors);
-        Optional<FloorCount> max = stream.max(Comparator.comparingInt(FloorCount::count));
+        Optional<FloorCount> max = stream.max(Comparator.comparingInt(FloorCount::count).thenComparingInt(fc -> -fc.cell().stepDistance(currentPosition)));
         return max.map(FloorCount::cell).orElseThrow(() -> new RuntimeException("could not find next position to explore"));
     }
 
-    private void printOut(Map<AbsolutePosition, String> markers) {
-        IntStream.rangeClosed(min.row(), max.row()).mapToObj(Integer::valueOf).flatMap(row -> IntStream.rangeClosed(min.col(), max.col()).mapToObj(col -> new AbsolutePosition(row, col))).map(p -> format(p, markers)).forEachOrdered(System.out::print);
+    public static void print(Map<AbsolutePosition, CellType> knownCells, Map<AbsolutePosition, String> markers) {
+        AbsolutePosition[] minMax = new AbsolutePosition[2];
+
+        knownCells.forEach((pos, cell) -> {
+            AbsolutePosition min = minMax[0];
+            if (min == null) {
+                minMax[0] = pos;
+                minMax[1] = pos;
+            } else {
+                AbsolutePosition max = minMax[1];
+                minMax[0] = new AbsolutePosition(Math.min(min.row(), pos.row()), Math.min(min.col(), pos.col()));
+                minMax[1] = new AbsolutePosition(Math.max(max.row(), pos.row()), Math.max(max.col(), pos.col()));
+            }
+
+        });
+        print(knownCells, markers, minMax[0], minMax[1]);
     }
 
-    private String format(AbsolutePosition absolutePosition, Map<AbsolutePosition, String> markers) {
+    public static void print(Map<AbsolutePosition, CellType> knownCells, Map<AbsolutePosition, String> markers, AbsolutePosition min, AbsolutePosition max) {
+        IntStream.rangeClosed(min.row(), max.row()).mapToObj(Integer::valueOf).flatMap(row -> IntStream.rangeClosed(min.col(), max.col()).mapToObj(col -> new AbsolutePosition(row, col))).map(p -> format(p, markers, knownCells, max)).forEachOrdered(System.out::print);
+    }
+
+    private void printOut(Map<AbsolutePosition, String> markers) {
+        Map<AbsolutePosition, String> markersCopy = new HashMap<>(markers);
+        markersCopy.put(currentPosition, " C ");
+        for (int i = currentIndex; i < selectedPath.size(); i++) {
+            String p = String.format("%3d", (i - currentIndex));
+            markersCopy.put(selectedPath.get(i), p);
+        }
+        print(knownCells, markersCopy, min, max);
+    }
+
+    private static String format(AbsolutePosition absolutePosition, Map<AbsolutePosition, String> markers, Map<AbsolutePosition, CellType> knownCells, AbsolutePosition max) {
         CellType cellType = knownCells.get(absolutePosition);
-        String base = "";
-        int indexOf = selectedPath.indexOf(absolutePosition);
+        String base;
         if (markers.containsKey(absolutePosition)) {
             base = markers.get(absolutePosition);
-        } else if (currentPosition.equals(absolutePosition)) {
-            base = " C ";
         } else if (cellType == null || cellType == CellType.UNK) {
             base = " ? ";
-        } else if (indexOf >= 0) {
-            base = String.format("%3d", indexOf);
         } else {
             base = switch (cellType) {
                 case WLL -> " W ";
@@ -261,11 +299,11 @@ public class ChallengeImpl implements Challenge {
 //                MazeFactory.getFlowingCave(
 //                MazeFactory.get1WMap(
                 MazeFactory.getDungeon(
-                        Configuration.SMALL
-//                        Configuration.MEDIUM
+//                        Configuration.SMALL
+                        Configuration.MEDIUM
 //                        Configuration.LARGE
 //                        Configuration.HUGE
-                        , 100
+                        , 102
                 )
         ).doAllMoves();
     }

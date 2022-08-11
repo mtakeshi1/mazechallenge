@@ -1,6 +1,6 @@
 package mc.renamebeforepr;
 
-public record FringeEntry(FringeEntry previousPath, AbsolutePosition destination, int cost) implements Comparable<FringeEntry> {
+public record FringeEntry(FringeEntry previousPath, AbsolutePosition destination, int steps, int cost) implements Comparable<FringeEntry> {
 //    private final int cost;
 //    private final Position destination;
 //    private final FringeEntry previousPath;

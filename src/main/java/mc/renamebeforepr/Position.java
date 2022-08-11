@@ -3,7 +3,9 @@ package mc.renamebeforepr;
 import mc.challenge.maze.Direction;
 import mc.challenge.maze.Maze;
 
-public interface Position {
+import java.io.Serializable;
+
+public interface Position extends Serializable {
 
     int row();
 
