@@ -4,6 +4,7 @@ import mc.Configuration;
 import mc.challenge.Challenge;
 import mc.challenge.maze.Direction;
 import mc.challenge.maze.HeadlessMain;
+import mc.challenge.maze.Maze;
 import mc.challenge.maze.Maze.CellType;
 import mc.challenge.maze.MazeFactory;
 
@@ -56,7 +57,7 @@ public class ChallengeImpl implements Challenge {
             selectedPath.clear();
             currentIndex = 0;
             traceNextPath(currentPosition);
-            printOut(Collections.emptyMap());
+//            printOut(Collections.emptyMap());
         }
         AbsolutePosition remove = selectedPath.get(currentIndex++);
         if (!remove.equals(currentPosition)) {
@@ -106,7 +107,7 @@ public class ChallengeImpl implements Challenge {
     }
 
     private void traceNextPath(AbsolutePosition currentPosition) {
-        AbsolutePosition target = finishLine != null ? finishLine : findBestExplorePosition(currentPosition);
+        AbsolutePosition target = finishLine != null ? finishLine : closestUnknown(currentPosition, knownCells);
         System.out.println("New destination selected. From:  " + currentPosition + " to: " + target);
         Collection<AbsolutePosition> path = findPath(currentPosition, target, knownCells, true, PathFindingCallback.NO_OP);
         if (path == null) {
@@ -154,6 +155,34 @@ public class ChallengeImpl implements Challenge {
             e.printStackTrace();
         }
     }
+
+
+    public static AbsolutePosition closestUnknown(AbsolutePosition current, Map<AbsolutePosition, Maze.CellType> maze) {
+        Queue<FringeEntry> fringe = new PriorityQueue<>(Comparator.comparingInt(FringeEntry::steps));
+        Set<AbsolutePosition> visited = new HashSet<>();
+        fringe.add(new FringeEntry(null, current, 0, 0));
+        while (!fringe.isEmpty()) {
+            var first = fringe.remove();
+            if (maze.get(first.destination()) == CellType.UNK) {
+                return first.destination();
+            }
+            if (visited.contains(first.destination())) {
+                continue;
+            }
+            visited.add(first.destination());
+            for (var dir : Direction.values()) {
+                var next = first.destination().walk(dir);
+                if (maze.get(next) == CellType.UNK) {
+                    return next;
+                }
+                if (!visited.contains(next) && maze.get(next) != CellType.WLL) {
+                    fringe.add(new FringeEntry(first.previousPath(), next, first.steps() + 1, 0));
+                }
+            }
+        }
+        throw new RuntimeException("No unknown tiles from: " + current);
+    }
+
 
     public static Collection<AbsolutePosition> findPath(AbsolutePosition from, AbsolutePosition to, Map<AbsolutePosition, CellType> knownCells, boolean lenient, PathFindingCallback callback) {
         //TODO this needs work, path finding

@@ -129,7 +129,7 @@ public class SwingPathCallback implements PathFindingCallback {
         try {
             if (autoAnimation) {
                 Thread.sleep(300);
-            } else while (!step) {
+            } else while (!step && !autoAnimation) {
                 Thread.sleep(100);
             }
             step = false;

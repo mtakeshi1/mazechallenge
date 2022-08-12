@@ -55,4 +55,19 @@ public class PathFindingTest {
         ChallengeImpl.print(maze, Map.of(from, "FFF", to, "TTT"));
         ChallengeImpl.findPath(from, to, maze, false, SwingPathCallback.getInstance());
     }
+
+    @Test
+    public void testCase4() throws IOException, ClassNotFoundException {
+        ObjectInputStream in = new ObjectInputStream(getClass().getResourceAsStream("/test4.bin"));
+        AbsolutePosition from = (AbsolutePosition) in.readObject();
+        AbsolutePosition to = (AbsolutePosition) in.readObject();
+        Map<AbsolutePosition, CellType> maze = (Map<AbsolutePosition, CellType>) in.readObject();
+        Assert.assertNotEquals(from, to);
+        Assert.assertTrue(maze.size() > 0);
+        System.out.println(maze.size());
+        System.out.println(from + " -> " + to);
+        System.out.println(from.stepDistance(to));
+        ChallengeImpl.print(maze, Map.of(from, "FFF", to, "TTT"));
+        ChallengeImpl.findPath(from, to, maze, false, SwingPathCallback.getInstance());
+    }
 }
