@@ -3,7 +3,7 @@ package mc;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import mc.drawing.GraphicalMain;
-import mc.everyos.EveryOSChallenge;
+import mc.participants.everyos.EveryOSChallenge;
 
 import static mc.Configuration.WINDOW_HEIGHT;
 import static mc.Configuration.WINDOW_WIDTH;
