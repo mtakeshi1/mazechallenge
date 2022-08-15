@@ -52,23 +52,19 @@ public class ChallengeImpl implements Challenge {
     public void handleLineOfSightUpdate(CellType[][] los) {
         newGridSpotted(los);
         visitedCells.add(currentPosition);
-        if (selectedPath.isEmpty() || currentIndex >= selectedPath.size() || currentTargetUnfeasible() || pathIsBlocked()) {
-            System.out.println("Looking for new destination");
+        if (selectedPath.isEmpty() || currentIndex >= selectedPath.size() || currentTargetAlreadyDiscovered() || pathIsBlocked()) {
             selectedPath.clear();
             currentIndex = 0;
             traceNextPath(currentPosition);
-//            printOut(Collections.emptyMap());
         }
         AbsolutePosition remove = selectedPath.get(currentIndex++);
         if (!remove.equals(currentPosition)) {
             this.selectedDirection = currentPosition.directionTo(remove);
-            System.out.println(selectedDirection);
             adjustOffset(selectedDirection);
             this.currentPosition = currentPosition.walk(selectedDirection);
         } else {
             System.out.println("Done?");
         }
-//        this.offset = offset.walk(this.selectedDirection);
     }
 
     private boolean pathIsBlocked() {
@@ -80,7 +76,7 @@ public class ChallengeImpl implements Challenge {
         return false;
     }
 
-    private boolean currentTargetUnfeasible() {
+    private boolean currentTargetAlreadyDiscovered() {
         AbsolutePosition target = selectedPath.get(selectedPath.size() - 1);
         FloorCount floorCount = countUnknownNeighboors(target);
         return floorCount.count() == 0;
@@ -97,21 +93,11 @@ public class ChallengeImpl implements Challenge {
         return selectedDirection;
     }
 
-    public static Direction reverse(Direction direction) {
-        return switch (direction) {
-            case NORTH -> Direction.SOUTH;
-            case EAST -> Direction.WEST;
-            case SOUTH -> Direction.NORTH;
-            case WEST -> Direction.EAST;
-        };
-    }
-
     private void traceNextPath(AbsolutePosition currentPosition) {
         AbsolutePosition target = finishLine != null ? finishLine : closestUnknown(currentPosition, knownCells, PathFindingCallback.NO_OP);
-        System.out.println("New destination selected. From:  " + currentPosition + " to: " + target);
         Collection<AbsolutePosition> path = findPath(currentPosition, target, knownCells, true, PathFindingCallback.NO_OP);
         if (path == null) {
-            printOut(Map.of(currentPosition, " F ", target, " T "));
+            throw new RuntimeException("Could not find path from: " + currentPosition + " to " + target);
         }
         selectedPath.addAll(path);
     }
@@ -187,8 +173,7 @@ public class ChallengeImpl implements Challenge {
 
 
     public static Collection<AbsolutePosition> findPath(AbsolutePosition from, AbsolutePosition to, Map<AbsolutePosition, CellType> knownCells, boolean lenient, PathFindingCallback callback) {
-        //TODO this needs work, path finding
-        writeTestCase(from, to, knownCells);
+//        writeTestCase(from, to, knownCells);
         Queue<FringeEntry> fringe = new PriorityQueue<>(Comparator.comparingInt(FringeEntry::cost).thenComparingInt(FringeEntry::steps));
         Queue<FringeEntry> closestEntries = new PriorityQueue<>(Comparator.comparingDouble(fe -> fe.destination().distanceTo(from) + fe.destination().distanceTo(to)));
         fringe.add(new FringeEntry(null, from, 0, 0));
@@ -273,7 +258,7 @@ public class ChallengeImpl implements Challenge {
     }
 
     private AbsolutePosition findBestExplorePosition(AbsolutePosition currentPosition) {
-        Stream<FloorCount> stream = IntStream.rangeClosed(min.col(), max.col()).mapToObj(Integer::valueOf).flatMap(col -> IntStream.rangeClosed(min.row(), max.row())
+        Stream<FloorCount> stream = IntStream.rangeClosed(min.col(), max.col()).boxed().flatMap(col -> IntStream.rangeClosed(min.row(), max.row())
                         .mapToObj(row -> new AbsolutePosition(row, col)))
                 .filter(abs -> !visitedCells.contains(abs))
                 .filter(abs -> knownCells.get(abs) == CellType.FLR)
@@ -310,7 +295,7 @@ public class ChallengeImpl implements Challenge {
     }
 
     public static void print(Map<AbsolutePosition, CellType> knownCells, Map<AbsolutePosition, String> markers, AbsolutePosition min, AbsolutePosition max) {
-        IntStream.rangeClosed(min.row(), max.row()).mapToObj(Integer::valueOf).flatMap(row -> IntStream.rangeClosed(min.col(), max.col()).mapToObj(col -> new AbsolutePosition(row, col))).map(p -> format(p, markers, knownCells, max)).forEachOrdered(System.out::print);
+        IntStream.rangeClosed(min.row(), max.row()).boxed().flatMap(row -> IntStream.rangeClosed(min.col(), max.col()).mapToObj(col -> new AbsolutePosition(row, col))).map(p -> format(p, markers, knownCells, max)).forEachOrdered(System.out::print);
     }
 
     private void printOut(Map<AbsolutePosition, String> markers) {

@@ -4,7 +4,6 @@ import mc.challenge.maze.Maze;
 import mc.renamebeforepr.AbsolutePosition;
 import mc.renamebeforepr.FringeEntry;
 import mc.renamebeforepr.PathFindingCallback;
-import org.graalvm.polyglot.proxy.ProxyExecutable;
 
 import javax.swing.*;
 import java.awt.*;
