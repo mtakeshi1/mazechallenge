@@ -2,19 +2,22 @@ package path;
 
 import mc.challenge.maze.Maze;
 import mc.renamebeforepr.AbsolutePosition;
-import mc.renamebeforepr.ChallengeImpl;
 import mc.renamebeforepr.FringeEntry;
 import mc.renamebeforepr.PathFindingCallback;
+import org.graalvm.polyglot.proxy.ProxyExecutable;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.*;
+import java.util.function.Function;
 
 public class SwingPathCallback implements PathFindingCallback {
 
     private static volatile SwingPathCallback sharedInstance;
+    private final MazePanel center;
+    private final Function<AbsolutePosition, Color> colorFunction;
 
     private JFrame mainWindow;
 
@@ -53,52 +56,27 @@ public class SwingPathCallback implements PathFindingCallback {
                 mainWindow.dispose();
             }
         });
-        JPanel center = new JPanel() {
-
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                AbsolutePosition[] minMax = ChallengeImpl.discoverMinMax(map);
-                if (minMax[0] == null) {
-                    return;
-                }
-                var min = minMax[0];
-                var max = minMax[1];
-                int rows = max.row() - min.row() + 1;
-                int cols = max.col() - min.col() + 1;
-                int celHeight = this.getHeight() / rows;
-                int cellWidth = this.getWidth() / cols;
-                for (int row = 0; row < rows; row++) {
-                    for (int col = 0; col < cols; col++) {
-                        AbsolutePosition cell = new AbsolutePosition(row + min.row(), col + min.col());
-                        Color color;
-                        if (selectedCell.equals(cell)) {
-                            color = Color.CYAN;
-                        } else if (fringe.contains(cell)) {
-                            color = Color.YELLOW;
-                        } else if (visited.contains(cell)) {
-                            color = Color.WHITE;
-                        } else if(from.equals(cell)) {
-                            color = Color.RED;
-                        } else if(to.equals(cell)) {
-                            color = Color.GREEN;
-                        } else {
-                            Maze.CellType type = map.getOrDefault(cell, Maze.CellType.UNK);
-                            color = switch (type) {
-//                                case SRT -> Color.RED;
-                                case WLL -> Color.ORANGE;
-//                                case FSH -> Color.GREEN;
-                                case FLR, SRT, FSH -> Color.LIGHT_GRAY;
-                                default -> Color.BLACK;
-                            };
-                        }
-                        g.setColor(color);
-                        g.fillRect(col * cellWidth, row * celHeight, cellWidth, celHeight);
-                    }
-                }
+        this.colorFunction = cell -> {
+            if (selectedCell.equals(cell)) {
+                return Color.CYAN;
+            } else if (fringe.contains(cell)) {
+                return Color.YELLOW;
+            } else if (visited.contains(cell)) {
+                return Color.WHITE;
+            } else if (from.equals(cell)) {
+                return Color.RED;
+            } else if (to.equals(cell)) {
+                return Color.GREEN;
+            } else {
+                Maze.CellType type = map.getOrDefault(cell, Maze.CellType.UNK);
+                return switch (type) {
+                    case WLL -> Color.ORANGE;
+                    case FLR, SRT, FSH -> Color.LIGHT_GRAY;
+                    default -> Color.BLACK;
+                };
             }
-
         };
+        this.center = new MazePanel(this.map.keySet(), colorFunction);
         mainWindow.getContentPane().add(BorderLayout.CENTER, center);
         JPanel south = new JPanel();
         mainWindow.getContentPane().add(BorderLayout.SOUTH, south);
@@ -125,16 +103,21 @@ public class SwingPathCallback implements PathFindingCallback {
         this.map = maze;
         this.from = from;
         this.to = to;
+        this.center.updateCells(this.map.keySet(), this.colorFunction);
         SwingUtilities.invokeLater(() -> mainWindow.repaint());
         try {
             if (autoAnimation) {
                 Thread.sleep(300);
-            } else while (!step && !autoAnimation) {
+            } else while (!step && !autoAnimation && mainWindow.isVisible()) {
                 Thread.sleep(100);
             }
             step = false;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    public boolean isVisible() {
+        return mainWindow.isVisible();
     }
 }

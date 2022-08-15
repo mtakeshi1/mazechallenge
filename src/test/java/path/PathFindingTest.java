@@ -27,6 +27,24 @@ public class PathFindingTest {
     }
 
     @Test
+    public void testCaseSmall() throws IOException, ClassNotFoundException, InterruptedException {
+        ObjectInputStream in = new ObjectInputStream(getClass().getResourceAsStream("/test-small.bin"));
+        AbsolutePosition from = (AbsolutePosition) in.readObject();
+        AbsolutePosition to = (AbsolutePosition) in.readObject();
+        Map<AbsolutePosition, CellType> maze = (Map<AbsolutePosition, CellType>) in.readObject();
+//        maze.put(to, CellType.UNK);
+        Assert.assertNotEquals(from, to);
+        Assert.assertTrue(maze.size() > 0);
+        System.out.println(maze.size());
+//        SwingPathCallback instance = SwingPathCallback.getInstance();
+        ChallengeImpl.findPath(from, to, maze, false, PathFindingCallback.NO_OP);
+//        while (instance.isVisible()) {
+//            Thread.sleep(1000);
+//        }
+
+    }
+
+    @Test
     public void testCase2() throws IOException, ClassNotFoundException {
         ObjectInputStream in = new ObjectInputStream(getClass().getResourceAsStream("/test2.bin"));
         AbsolutePosition from = (AbsolutePosition) in.readObject();
@@ -53,7 +71,9 @@ public class PathFindingTest {
         System.out.println(from + " -> " + to);
         System.out.println(from.stepDistance(to));
         ChallengeImpl.print(maze, Map.of(from, "FFF", to, "TTT"));
-        ChallengeImpl.findPath(from, to, maze, false, SwingPathCallback.getInstance());
+        AbsolutePosition absolutePosition = ChallengeImpl.closestUnknown(from, maze, SwingPathCallback.getInstance());
+        ChallengeImpl.findPath(from, absolutePosition, maze, false, SwingPathCallback.getInstance());
+
     }
 
     @Test
@@ -68,6 +88,7 @@ public class PathFindingTest {
         System.out.println(from + " -> " + to);
         System.out.println(from.stepDistance(to));
         ChallengeImpl.print(maze, Map.of(from, "FFF", to, "TTT"));
-        ChallengeImpl.findPath(from, to, maze, false, SwingPathCallback.getInstance());
+        ChallengeImpl.closestUnknown(from, maze, SwingPathCallback.getInstance());
+//        ChallengeImpl.findPath(from, to, maze, false, SwingPathCallback.getInstance());
     }
 }

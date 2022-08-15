@@ -107,7 +107,7 @@ public class ChallengeImpl implements Challenge {
     }
 
     private void traceNextPath(AbsolutePosition currentPosition) {
-        AbsolutePosition target = finishLine != null ? finishLine : closestUnknown(currentPosition, knownCells);
+        AbsolutePosition target = finishLine != null ? finishLine : closestUnknown(currentPosition, knownCells, PathFindingCallback.NO_OP);
         System.out.println("New destination selected. From:  " + currentPosition + " to: " + target);
         Collection<AbsolutePosition> path = findPath(currentPosition, target, knownCells, true, PathFindingCallback.NO_OP);
         if (path == null) {
@@ -157,13 +157,15 @@ public class ChallengeImpl implements Challenge {
     }
 
 
-    public static AbsolutePosition closestUnknown(AbsolutePosition current, Map<AbsolutePosition, Maze.CellType> maze) {
+    public static AbsolutePosition closestUnknown(AbsolutePosition current, Map<AbsolutePosition, Maze.CellType> maze, PathFindingCallback callback) {
+        //TODO implement a DFS instead
         Queue<FringeEntry> fringe = new PriorityQueue<>(Comparator.comparingInt(FringeEntry::steps));
         Set<AbsolutePosition> visited = new HashSet<>();
         fringe.add(new FringeEntry(null, current, 0, 0));
         while (!fringe.isEmpty()) {
             var first = fringe.remove();
-            if (maze.get(first.destination()) == CellType.UNK) {
+            callback.newState(first.destination(), fringe, visited, maze, current, current);
+            if (maze.getOrDefault(first.destination(), CellType.UNK) == CellType.UNK) {
                 return first.destination();
             }
             if (visited.contains(first.destination())) {
@@ -235,7 +237,7 @@ public class ChallengeImpl implements Challenge {
             var next = from.walk(direction);
             CellType type = knownCells.get(next);
             //next.isWithin(los) && next.cellAt(los) != CellType.WLL && next.cellAt(los) != CellType.UNK
-            if (!visited.contains(next) && type != null && type != CellType.WLL) {
+            if (!visited.contains(next) && type != CellType.WLL) {
                 FringeEntry entry = new FringeEntry(current, next, nextStep, next.stepDistance(startingPoint) + next.stepDistance(goal));
                 fringe.add(entry);
             }
@@ -285,10 +287,10 @@ public class ChallengeImpl implements Challenge {
         print(knownCells, markers, minMax[0], minMax[1]);
     }
 
-    public static AbsolutePosition[] discoverMinMax(Map<AbsolutePosition, CellType> knownCells) {
+    public static AbsolutePosition[] discoverMinMax(Collection<? extends AbsolutePosition> cells) {
         AbsolutePosition[] minMax = new AbsolutePosition[2];
 
-        knownCells.forEach((pos, cell) -> {
+        cells.forEach(pos -> {
             AbsolutePosition min = minMax[0];
             if (min == null) {
                 minMax[0] = pos;
@@ -301,6 +303,10 @@ public class ChallengeImpl implements Challenge {
 
         });
         return minMax;
+    }
+
+    public static AbsolutePosition[] discoverMinMax(Map<AbsolutePosition, CellType> knownCells) {
+        return discoverMinMax(knownCells.keySet());
     }
 
     public static void print(Map<AbsolutePosition, CellType> knownCells, Map<AbsolutePosition, String> markers, AbsolutePosition min, AbsolutePosition max) {
