@@ -10,14 +10,18 @@ import static mc.challenge.maze.mazetypes.EmptyMaze.getEmptyMazeArray;
 
 public class ScatterMaze extends Maze {
 
-    private static final Random rnd = new Random();
+//    private final Random rnd = new Random();
 
     public ScatterMaze(int size) {
-        super(getArray(size, size));
+        super(getArray(size, size, new Random()));
+    }
+
+    public ScatterMaze(int size, long seed) {
+        super(getArray(size, size, new Random(seed)));
     }
 
 
-    private static char[][] getArray(int rows, int cols) {
+    private static char[][] getArray(int rows, int cols, Random rnd) {
         var map = getEmptyMazeArray(rows, cols);
 
         int total = (int) (0.10f * (rows * cols));

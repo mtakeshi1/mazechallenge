@@ -24,9 +24,11 @@ public class MazeFactory {
         return print(new EmptyMaze(size));
     }
 
-
     public static Maze getScatterMap(int size) {
         return print(new ScatterMaze(size));
+    }
+    public static Maze getScatterMap(int size, long seed) {
+        return print(new ScatterMaze(size, seed));
     }
 
     public static Maze get1WMap(int size) {
@@ -37,12 +39,15 @@ public class MazeFactory {
         return print(new DungeonMaze(size));
     }
 
-    public static Maze getDungeon(int size, long seed) {
-        return print(new DungeonMaze(DungeonMaze.getDungeonArray(size, size, new GWTRNG(seed))));
-    }
-
     public static Maze getFlowingCave(int size) {
         return print(new FlowingCaveMaze(size));
+    }
+    public static Maze getFlowingCave(int size, long seed) {
+        return print(new FlowingCaveMaze(size, seed));
+    }
+
+    public static Maze getDungeon(int size, long seed) {
+        return print(new DungeonMaze(DungeonMaze.getDungeonArray(size, size, new GWTRNG(seed))));
     }
 
     public static Maze getHuge1wMazeFromFile(int index) {

@@ -13,18 +13,22 @@ import static mc.challenge.maze.ArrayUtil.rotate;
 
 public class FlowingCaveMaze extends Maze {
 
-    private static final Random rnd = new Random();
+//    private static final Random rnd = new Random();
 
     public FlowingCaveMaze(int size) {
-        super(getArray(size, size));
+        super(getArray(size, size, new Random()));
     }
 
     public FlowingCaveMaze(String filename) {
         super(MazeParser.fileToMatrix(filename));
     }
 
+    public FlowingCaveMaze(int size, long seed) {
+        super(getArray(size, size, new Random(seed)));
+    }
 
-    private static char[][] getArray(int rows, int cols) {
+
+    private static char[][] getArray(int rows, int cols, Random rnd) {
         IDungeonGenerator gen = new FlowingCaveGenerator(rows, cols);
         char[][] generated = gen.generate();
 

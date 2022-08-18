@@ -21,7 +21,7 @@ public class HeadlessMain {
         challenge.handleLineOfSightUpdate(maze.getLineOfSight());
     }
 
-    public void doAllMoves() {
+    public int doAllMoves() {
         while (!maze.isEndReached()) {
             maze.doMove(challenge.getMove());
             challenge.handleLineOfSightUpdate(maze.getLineOfSight());
@@ -32,5 +32,6 @@ public class HeadlessMain {
         }
 
         System.out.println("solved in steps: " + maze.getStepsTaken());
+        return maze.getStepsTaken();
     }
 }

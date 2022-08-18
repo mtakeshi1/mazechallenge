@@ -63,7 +63,7 @@ public class ChallengeImpl implements Challenge {
             adjustOffset(selectedDirection);
             this.currentPosition = currentPosition.walk(selectedDirection);
         } else {
-            System.out.println("Done?");
+//            System.out.println("Done?");
         }
     }
 
@@ -345,6 +345,8 @@ public class ChallengeImpl implements Challenge {
                 )
         ).doAllMoves();
     }
+
+
 
 
     //Just here to show explain how the Line Of Sight array is build.
