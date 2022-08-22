@@ -33,7 +33,7 @@ public class AllChallenges {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        pause("Before starting");
+//        pause("Before starting");
         long seed = 102;
         System.out.printf("%20s%10s%10s%10s%10s%n", "name", "size", "time(ms)", "tiles", "moves");
         mazeFactories.forEach((name, builder) -> {
@@ -46,7 +46,7 @@ public class AllChallenges {
                 System.out.printf("%20s%10d%10d%10d%10d%n", maze.getMazeType(), size, r.timeTakenMS(), r.tilesExplored(), r.moves());
             }
         });
-        pause("Finished");
+//        pause("Finished");
     }
 
     private static void pause(String msg) throws IOException, InterruptedException {

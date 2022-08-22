@@ -32,7 +32,7 @@ public class ChallengeImpl implements Challenge {
     private AbsolutePosition currentPosition = new AbsolutePosition(CENTER.row(), CENTER.col());
 
     private PositionOffset offset = new PositionOffset(0, 0);
-    private Direction selectedDirection = Direction.NORTH;
+    private Direction selectedDirection;
     private Map<AbsolutePosition, CellType> knownCells = new HashMap<>();
     private Set<AbsolutePosition> visitedCells = new HashSet<>();
     private List<AbsolutePosition> selectedPath = new ArrayList<>();
@@ -50,7 +50,7 @@ public class ChallengeImpl implements Challenge {
      */
     @Override
     public void handleLineOfSightUpdate(CellType[][] los) {
-        newGridSpotted(los);
+        newGridSpotted(los, selectedDirection);
         visitedCells.add(currentPosition);
         if (selectedPath.isEmpty() || currentIndex >= selectedPath.size() || currentTargetAlreadyDiscovered() || pathIsBlocked()) {
             selectedPath.clear();
@@ -94,33 +94,63 @@ public class ChallengeImpl implements Challenge {
     }
 
     private void traceNextPath(AbsolutePosition currentPosition) {
-        AbsolutePosition target = finishLine != null ? finishLine : closestUnknown(currentPosition, knownCells, PathFindingCallback.NO_OP);
-        Collection<AbsolutePosition> path = findPath(currentPosition, target, knownCells, true, PathFindingCallback.NO_OP);
+        Collection<AbsolutePosition> path = finishLine != null ?
+                findPath(currentPosition, finishLine, knownCells, true, PathFindingCallback.NO_OP) :
+                pathToclosestUnknown(currentPosition, knownCells, PathFindingCallback.NO_OP);
         if (path == null) {
-            throw new RuntimeException("Could not find path from: " + currentPosition + " to " + target);
+            throw new RuntimeException("Could not find path from: " + currentPosition);
         }
         selectedPath.addAll(path);
     }
 
-    private void newGridSpotted(CellType[][] los) {
+    private void newGridSpotted(CellType[][] los, Direction selectedDirection) {
+//        if (selectedDirection == null) {
         //optimize according to last moved direction, don't need to probe the entire array every time
         for (int row = 0; row < los.length; row++) {
             for (int col = 0; col < los[0].length; col++) {
-                LosPosition relative = new LosPosition(row, col);
-                CellType cellType = relative.cellAt(los);
-                AbsolutePosition absolute = offset.plus(relative);
-                if (!knownCells.containsKey(absolute) || knownCells.get(absolute) == CellType.UNK) {
-                    knownCells.put(absolute, cellType);
-                    if (cellType == CellType.FSH && finishLine == null) {
-                        // we just found the finish line, b-line straight to it
-                        finishLine = absolute;
-                        this.selectedPath.clear();
-                    }
-                }
-                min = new AbsolutePosition(Math.min(min.row(), absolute.row()), Math.min(min.col(), absolute.col()));
-                max = new AbsolutePosition(Math.max(max.row(), absolute.row()), Math.max(max.col(), absolute.col()));
+                updateCell(los, row, col);
             }
         }
+//        } else {
+//            switch (selectedDirection) {
+//                case NORTH -> {
+//                    for (int col = 0; col < los[0].length; col++) {
+//                        updateCell(los, los.length - 1, col);
+//                    }
+//                }
+//                case EAST -> {
+//                    for (int row = 0; row < los.length; row++) {
+//                        updateCell(los, row, los[row].length - 1);
+//                    }
+//                }
+//                case SOUTH -> {
+//                    for (int col = 0; col < los[0].length; col++) {
+//                        updateCell(los, 0, col);
+//                    }
+//                }
+//                case WEST -> {
+//                    for (int row = 0; row < los.length; row++) {
+//                        updateCell(los, row, 0);
+//                    }
+//                }
+//            }
+//        }
+    }
+
+    private void updateCell(CellType[][] los, int row, int col) {
+        LosPosition relative = new LosPosition(row, col);
+        CellType cellType = relative.cellAt(los);
+        AbsolutePosition absolute = offset.plus(relative);
+        if (!knownCells.containsKey(absolute) || knownCells.get(absolute) == CellType.UNK) {
+            knownCells.put(absolute, cellType);
+            if (cellType == CellType.FSH && finishLine == null) {
+                // we just found the finish line, b-line straight to it
+                finishLine = absolute;
+                this.selectedPath.clear();
+            }
+        }
+        min = new AbsolutePosition(Math.min(min.row(), absolute.row()), Math.min(min.col(), absolute.col()));
+        max = new AbsolutePosition(Math.max(max.row(), absolute.row()), Math.max(max.col(), absolute.col()));
     }
 
     private void adjustOffset(Direction selectedDirection) {
@@ -142,8 +172,7 @@ public class ChallengeImpl implements Challenge {
         }
     }
 
-
-    public static AbsolutePosition closestUnknown(AbsolutePosition current, Map<AbsolutePosition, Maze.CellType> maze, PathFindingCallback callback) {
+    public static List<AbsolutePosition> pathToclosestUnknown(AbsolutePosition current, Map<AbsolutePosition, Maze.CellType> maze, PathFindingCallback callback) {
         //TODO implement a DFS instead
         Queue<FringeEntry> fringe = new PriorityQueue<>(Comparator.comparingInt(FringeEntry::steps));
         Set<AbsolutePosition> visited = new HashSet<>();
@@ -152,7 +181,7 @@ public class ChallengeImpl implements Challenge {
             var first = fringe.remove();
             callback.newState(first.destination(), fringe, visited, maze, current, current);
             if (maze.getOrDefault(first.destination(), CellType.UNK) == CellType.UNK) {
-                return first.destination();
+                return selectPathTiles(current, first, new LinkedList<>());
             }
             if (visited.contains(first.destination())) {
                 continue;
@@ -160,15 +189,20 @@ public class ChallengeImpl implements Challenge {
             visited.add(first.destination());
             for (var dir : Direction.values()) {
                 var next = first.destination().walk(dir);
-                if (maze.get(next) == CellType.UNK) {
-                    return next;
-                }
+//                if (maze.get(next) == CellType.UNK) {
+//                    return selectPathTiles(current, first, new LinkedList<>());
+//                }
                 if (!visited.contains(next) && maze.get(next) != CellType.WLL) {
-                    fringe.add(new FringeEntry(first.previousPath(), next, first.steps() + 1, 0));
+                    fringe.add(new FringeEntry(first, next, first.steps() + 1, 0));
                 }
             }
         }
         throw new RuntimeException("No unknown tiles from: " + current);
+    }
+
+    public static AbsolutePosition closestUnknown(AbsolutePosition current, Map<AbsolutePosition, Maze.CellType> maze, PathFindingCallback callback) {
+        List<AbsolutePosition> path = pathToclosestUnknown(current, maze, callback);
+        return path.get(path.size() - 1);
     }
 
 
@@ -207,7 +241,7 @@ public class ChallengeImpl implements Challenge {
         throw new RuntimeException("no path from: " + from + " to: " + to);
     }
 
-    public static Collection<AbsolutePosition> selectPathTiles(AbsolutePosition from, FringeEntry first, LinkedList<AbsolutePosition> container) {
+    public static List<AbsolutePosition> selectPathTiles(AbsolutePosition from, FringeEntry first, LinkedList<AbsolutePosition> container) {
         Objects.requireNonNull(first, "should not reach end of chain");
         if (first.getSource() == null || first.getSource().equals(from)) {
             return container;
@@ -345,8 +379,6 @@ public class ChallengeImpl implements Challenge {
                 )
         ).doAllMoves();
     }
-
-
 
 
     //Just here to show explain how the Line Of Sight array is build.
